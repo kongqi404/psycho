@@ -22,26 +22,34 @@
             <button class="icon-button" type="button" data-open-safety aria-label="查看体验边界">i</button>
           </header>
 
-          <div class="today-hero" aria-hidden="true">
-            <div class="tide-orb"></div>
-            <div class="floating-note note-a"><span>一个念头</span></div>
-            <div class="floating-note note-b"><span>一小步</span></div>
-            <div class="floating-note note-c"><span>留给未来</span></div>
+          <div class="home-welcome">
+            <p class="eyebrow" id="today-date">TODAY</p>
+            <h1 id="today-title" tabindex="-1">今天不必一次走完，<br />先把下一步放稳。</h1>
+            <p>这里有一份今日潮汐，也有一段随时可以结束的陪伴对话。</p>
           </div>
 
-          <div class="hero-copy">
-            <p class="eyebrow">TODAY · 约 5 分钟</p>
-            <h1 id="today-title" tabindex="-1">把一个闪念，<br />走成一次自我梳理。</h1>
-            <p>写下此刻掠过脑海的几句话。你来确认主题，再通过选择、回应和一个微小行动，把它慢慢看清。</p>
-          </div>
+          <article class="daily-report-preview">
+            <div class="report-aurora" aria-hidden="true"><i></i><span>◐</span></div>
+            <div class="report-preview-meta"><span>今日潮汐</span><small id="today-report-mode">基础日报</small></div>
+            <h2 id="today-report-headline">今天似乎有一点向前的冲劲，也需要给自己留些余地。</h2>
+            <div class="report-basis-chips" id="today-report-basis" aria-label="日报生成依据"></div>
+            <blockquote id="today-report-quote">“今天不用一次走完，只要把下一步放稳。”</blockquote>
+            <button class="report-open-button" id="open-daily-report" type="button"><span>展开今天的专属建议</span><span aria-hidden="true">↗</span></button>
+          </article>
 
-          <div class="today-actions">
-            <button class="primary-button" id="start-flow" type="button">
-              <span>开始今天的梳理</span>
-              <span aria-hidden="true">→</span>
+          <div class="home-entry-grid">
+            <button class="home-entry primary-entry" id="start-flow" type="button">
+              <span class="home-entry-icon" aria-hidden="true">◐</span>
+              <span><strong>走一段今日章节</strong><small>闪念 · 选择 · 潮笺</small></span>
+              <i aria-hidden="true">→</i>
             </button>
-            <p class="privacy-line"><span aria-hidden="true">⌁</span> 默认不保存便贴 · 随时可以停下</p>
+            <button class="home-entry chat-entry" id="open-chat" type="button">
+              <span class="home-entry-icon" aria-hidden="true">◌</span>
+              <span><strong>和潮伴聊一会儿</strong><small>想说多少都可以</small></span>
+              <i aria-hidden="true">→</i>
+            </button>
           </div>
+          <p class="privacy-line"><span aria-hidden="true">⌁</span> 当前原型不上传或保存聊天 · 随时可以停下</p>
 
           <aside class="due-echo-card" id="due-echo-card" hidden>
             <span class="tiny-orb" aria-hidden="true"></span>
@@ -50,6 +58,44 @@
               <button class="text-button" type="button" data-nav-target="echoes-screen">去看看</button>
             </div>
           </aside>
+        </section>
+
+        <section class="screen report-screen" id="report-screen" aria-labelledby="report-title" hidden>
+          <header class="flow-header report-header">
+            <button class="back-button" id="report-back" type="button" aria-label="返回今天">←</button>
+            <span class="prototype-pill">今日潮汐</span>
+            <button class="icon-button" type="button" data-open-safety aria-label="查看体验边界">i</button>
+          </header>
+
+          <div class="report-hero">
+            <div class="report-hero-meta"><span id="report-date">今天</span><small id="report-mode">基础日报</small></div>
+            <h1 id="report-title" tabindex="-1"><span id="report-headline">今天似乎有一点向前的冲劲，也需要给自己留些余地。</span></h1>
+            <div class="report-basis-list" id="report-basis" aria-label="为什么这样说"></div>
+            <blockquote id="report-quote">“今天不用一次走完，只要把下一步放稳。”</blockquote>
+          </div>
+
+          <section class="report-content">
+            <div class="report-section-heading"><span>01</span><div><p>DAILY GUIDANCE</p><h2>今天可能有帮助</h2></div></div>
+            <p class="report-summary" id="report-summary"></p>
+            <div class="report-suggestions" id="report-suggestions"></div>
+          </section>
+
+          <section class="report-transparency">
+            <div class="report-section-heading"><span>02</span><div><p>WHY THIS REPORT</p><h2>这份日报从哪里来</h2></div></div>
+            <p id="report-source-copy"></p>
+            <p class="report-boundary">它提供生活节奏建议，不是测评、诊断或对你的固定定义。</p>
+          </section>
+
+          <section class="report-feedback" aria-labelledby="report-feedback-title">
+            <h2 id="report-feedback-title">这份日报像你今天的状态吗？</h2>
+            <div role="group" aria-label="日报反馈">
+              <button type="button" data-report-feedback="helpful">有一点帮助</button>
+              <button type="button" data-report-feedback="not-me">不太像我</button>
+            </div>
+            <p id="report-feedback-status" role="status">反馈只用于调整之后的表达方式。</p>
+          </section>
+
+          <button class="primary-button report-chat-button" id="report-start-chat" type="button"><span>想聊聊这份日报</span><span aria-hidden="true">→</span></button>
         </section>
 
         <section class="screen flow-screen notes-screen" id="notes-screen" aria-labelledby="notes-title" hidden>
@@ -135,13 +181,24 @@
 
           <blockquote class="confirmed-theme" id="overview-theme"></blockquote>
 
+          <section class="tide-legend" aria-label="本章四股潮向">
+            <div class="tide-legend-heading"><strong>四股潮向</strong><span>本章资源 · 不是测评</span></div>
+            <div class="tide-legend-items">
+              <span><b aria-hidden="true">◐</b>照见</span>
+              <span><b aria-hidden="true">⌁</b>安住</span>
+              <span><b aria-hidden="true">∞</b>相连</span>
+              <span><b aria-hidden="true">✦</b>余力</span>
+            </div>
+            <p>选择会改变潮位；满潮时，一张短句会来到途中。章节结束不计算总分。</p>
+          </section>
+
           <ol class="chapter-route" aria-label="本次章节路线">
             <li class="is-current"><span>01</span><div><strong>情境选择</strong><small>6 张卡 · 没有标准答案</small></div><i>约 2 分钟</i></li>
-            <li><span>02</span><div><strong>三轮回应</strong><small>你可以纠正，也可以跳过</small></div></li>
+            <li><span>02</span><div><strong>情绪陪伴对话</strong><small>自由表达 · 随时结束</small></div></li>
             <li><span>03</span><div><strong>带走一小步</strong><small>行动与未来回响</small></div></li>
           </ol>
 
-          <div class="boundary-note"><span aria-hidden="true">i</span><p>选择只用于调整本次回应的节奏，不判断人格或心理状况。</p></div>
+          <div class="boundary-note"><span aria-hidden="true">i</span><p>选择只用于调整本次对话开场和建议，不判断人格或心理状况。</p></div>
 
           <div class="sticky-footer">
             <button class="primary-button" id="overview-start" type="button">
@@ -161,6 +218,21 @@
             <p class="eyebrow">第一章 · 看见</p>
             <h1 id="game-title" tabindex="-1">情境选择</h1>
             <p class="theme-thread" id="game-theme"></p>
+          </div>
+
+          <div class="tide-meters" id="tide-meters" aria-label="本章四股潮向；满潮会遇见一张短句">
+            <div class="tide-meter" data-tide="insight" role="progressbar" aria-label="照见" aria-valuemin="0" aria-valuemax="100" aria-valuenow="32">
+              <span class="tide-meter-label"><b aria-hidden="true">◐</b><small>照见</small></span><i class="tide-track"><span></span></i>
+            </div>
+            <div class="tide-meter" data-tide="grounding" role="progressbar" aria-label="安住" aria-valuemin="0" aria-valuemax="100" aria-valuenow="32">
+              <span class="tide-meter-label"><b aria-hidden="true">⌁</b><small>安住</small></span><i class="tide-track"><span></span></i>
+            </div>
+            <div class="tide-meter" data-tide="connection" role="progressbar" aria-label="相连" aria-valuemin="0" aria-valuemax="100" aria-valuenow="32">
+              <span class="tide-meter-label"><b aria-hidden="true">∞</b><small>相连</small></span><i class="tide-track"><span></span></i>
+            </div>
+            <div class="tide-meter" data-tide="vitality" role="progressbar" aria-label="余力" aria-valuemin="0" aria-valuemax="100" aria-valuenow="32">
+              <span class="tide-meter-label"><b aria-hidden="true">✦</b><small>余力</small></span><i class="tide-track"><span></span></i>
+            </div>
           </div>
 
           <div class="scene" id="scene" aria-hidden="true">
@@ -187,51 +259,58 @@
           </section>
 
           <div class="choice-actions">
-            <button class="choice-button left" id="left-button" type="button"><span aria-hidden="true">←</span><span id="left-button-label"></span></button>
-            <button class="choice-button right" id="right-button" type="button"><span id="right-button-label"></span><span aria-hidden="true">→</span></button>
+            <button class="choice-button left" id="left-button" type="button"><span class="choice-arrow" aria-hidden="true">←</span><span class="choice-copy"><strong id="left-button-label"></strong><small id="left-tide-hint"></small></span></button>
+            <button class="choice-button right" id="right-button" type="button"><span class="choice-copy"><strong id="right-button-label"></strong><small id="right-tide-hint"></small></span><span class="choice-arrow" aria-hidden="true">→</span></button>
             <button class="neutral-button" id="neutral-button" type="button">两个都不像</button>
           </div>
           <p class="swipe-help" id="swipe-help">滑动、点击，或使用键盘 ← → ↓</p>
           <div class="result-toast" id="result-toast" role="status"></div>
         </section>
 
-        <section class="screen flow-screen response-screen" id="response-screen" aria-labelledby="response-title" hidden>
+        <section class="screen chat-screen" id="chat-screen" aria-labelledby="chat-title" hidden>
           <header class="flow-header">
-            <button class="back-button" id="response-back" type="button" aria-label="返回最后一张选择卡">←</button>
-            <div class="step-indicator"><span id="response-step">01</span><i id="response-progress" style="--progress: 33%"></i><small>03</small></div>
+            <button class="back-button" id="chat-back" type="button" aria-label="返回上一页">←</button>
+            <span class="prototype-pill">情绪陪伴 · 演示</span>
             <button class="icon-button" type="button" data-open-safety aria-label="查看体验边界">i</button>
           </header>
 
-          <div class="screen-heading compact-heading">
-            <p class="eyebrow">第二章 · 回应</p>
-            <h1 id="response-title" tabindex="-1">停一下，听听<br />刚才的选择。</h1>
-            <p>一共三轮。这里不会替你解释，你可以随时纠正或结束。</p>
+          <div class="chat-heading">
+            <div class="companion-avatar" aria-hidden="true">潮</div>
+            <div><p class="eyebrow" id="chat-kicker">第二章 · 对话</p><h1 id="chat-title" tabindex="-1">和潮伴聊一会儿</h1><p id="chat-subtitle">你可以纠正我、跳过问题，或随时结束。</p></div>
           </div>
 
-          <article class="response-card">
-            <p class="response-label">我听见的是</p>
-            <blockquote id="response-reference"></blockquote>
-            <div class="response-divider"></div>
-            <h2 id="response-question"></h2>
-            <div class="response-options" id="response-options" role="group" aria-label="回应选项"></div>
-          </article>
+          <aside class="chat-boundary"><span aria-hidden="true">i</span><p>潮伴可以陪你梳理感受，但不能诊断、治疗或替代专业帮助。当前是本地演示回复。</p></aside>
 
-          <button class="correction-trigger" id="response-correct" type="button"><span aria-hidden="true">✎</span>这不准确，我来改一句</button>
-          <div class="correction-panel" id="correction-panel" hidden>
-            <label for="response-correction">更接近你的说法</label>
-            <textarea id="response-correction" maxlength="100" rows="2" placeholder="只写你愿意留下的部分"></textarea>
-            <button class="small-button" id="use-correction" type="button" disabled>用这句话继续</button>
+          <div class="chat-log" id="chat-log" role="log" aria-live="polite" aria-label="与潮伴的对话"></div>
+
+          <div class="chat-quick-prompts" id="chat-quick-prompts" aria-label="快捷表达">
+            <button type="button" data-chat-prompt="我只想说说，暂时不需要建议。">我只想说说</button>
+            <button type="button" data-chat-prompt="帮我把眼前的压力拆小一点。">帮我拆小压力</button>
+            <button type="button" data-chat-prompt="我现在有点累，不知道从哪里开始。">我现在有点累</button>
           </div>
 
-          <div class="response-exits">
-            <button class="text-button" id="skip-response" type="button">跳过这一问</button>
-            <button class="text-button quiet" id="stop-responses" type="button">到这里就好</button>
+          <aside class="chat-crisis-panel" id="chat-crisis-panel" role="alert" hidden>
+            <h2>先把安全放在这里</h2>
+            <p>如果你或他人正处于即时危险，请立刻联系所在地紧急服务、危机支持资源，或一位能马上来到身边的可信任对象。</p>
+            <button class="secondary-button" type="button" data-open-safety>查看完整支持说明</button>
+          </aside>
+
+          <form class="chat-composer" id="chat-form">
+            <label class="sr-only" for="chat-input">想对潮伴说的话</label>
+            <textarea id="chat-input" rows="1" maxlength="400" placeholder="此刻最想说的是……"></textarea>
+            <button id="send-chat" type="submit" aria-label="发送消息" disabled>↑</button>
+          </form>
+          <p class="chat-status" id="chat-status" role="status">聊天内容只在本次页面内存中使用</p>
+
+          <div class="chat-exits">
+            <button class="text-button quiet" id="chat-crisis-help" type="button">我现在需要紧急帮助</button>
+            <button class="primary-button" id="end-chat" type="button"><span>聊到这里，继续</span><span aria-hidden="true">→</span></button>
           </div>
         </section>
 
         <section class="screen flow-screen action-screen" id="action-screen" aria-labelledby="action-title" hidden>
           <header class="flow-header">
-            <button class="back-button" id="action-back" type="button" aria-label="返回回应">←</button>
+            <button class="back-button" id="action-back" type="button" aria-label="返回陪伴对话">←</button>
             <span class="prototype-pill">第三章 · 一小步</span>
             <button class="icon-button" type="button" data-open-safety aria-label="查看体验边界">i</button>
           </header>
@@ -316,8 +395,42 @@
             <div class="completion-row"><span>未来回响</span><strong id="complete-echo"></strong></div>
           </article>
 
+          <section class="completion-tide-collection" id="complete-tide-collection" hidden>
+            <div class="completion-tide-heading">
+              <div><p>本章收进卡槽</p><strong>潮笺可以在结束后继续回顾</strong></div>
+              <button class="text-button" type="button" data-nav-target="cards-screen">打开卡槽</button>
+            </div>
+            <div class="complete-tide-cards" id="complete-tide-cards"></div>
+            <p id="complete-tide-note"></p>
+          </section>
+
           <p class="completion-note">这是一张本次心理地图，不是对你的长期定义。明天再来时，可以从新的闪念重新开始。</p>
           <button class="primary-button light-button" id="restart-flow" type="button"><span>再走一次</span><span aria-hidden="true">↻</span></button>
+        </section>
+
+        <section class="screen library-screen card-slot-screen" id="cards-screen" aria-labelledby="cards-title" hidden>
+          <header class="app-header">
+            <a class="brand-mark" href="#today" data-nav-target="today-screen" aria-label="返回今天"><span aria-hidden="true">◐</span><strong>心潮</strong></a>
+            <button class="icon-button" type="button" data-open-safety aria-label="查看体验边界">i</button>
+          </header>
+          <div class="screen-heading library-heading">
+            <p class="eyebrow">MY TIDE CARDS</p>
+            <h1 id="cards-title" tabindex="-1">潮笺卡槽</h1>
+            <p>满潮时选择「收进卡槽」，那张短句就会留在这里。它和未来回响是两件不同的事。</p>
+          </div>
+
+          <section class="card-slot-summary" aria-live="polite">
+            <div><span>已收集</span><strong id="card-slot-count">0 / 12</strong></div>
+            <p id="card-slot-copy">满潮时选择收进卡槽，第一张潮笺就会出现在这里。</p>
+          </section>
+
+          <div class="tide-card-grid" id="tide-card-grid" aria-label="潮笺收藏槽"></div>
+
+          <section class="card-slot-privacy">
+            <span aria-hidden="true">⌁</span>
+            <p><strong>卡槽不保存你的心理内容</strong><small>本机只记录内置卡片编号和收藏时间；不保存闪念、选择、潮位或画像。</small></p>
+          </section>
+          <button class="ghost-button full-width" type="button" data-nav-target="settings-screen">管理本地卡槽</button>
         </section>
 
         <section class="screen library-screen" id="echoes-screen" aria-labelledby="echoes-title" hidden>
@@ -354,10 +467,15 @@
             <h2>本地与隐私</h2>
             <dl>
               <div><dt>闪念便贴</dt><dd>仅在本次页面中使用，不持久保存</dd></div>
-              <div><dt>章节选择</dt><dd>仅用于本次回应，离开后清除</dd></div>
+              <div><dt>章节选择</dt><dd>仅用于本次对话开场与建议，离开后清除</dd></div>
+              <div><dt>潮笺卡槽</dt><dd>点击「收进卡槽」后，只保存内置卡片编号与收藏时间</dd></div>
+              <div><dt>陪伴对话</dt><dd>当前原型仅在页面内存运行；正式接入前需明确服务端保存期限</dd></div>
               <div><dt>未来回响</dt><dd>只有主动勾选后保存在这台设备</dd></div>
             </dl>
-            <button class="secondary-button" id="settings-clear-echoes" type="button">删除全部已保存回响</button>
+            <div class="settings-actions">
+              <button class="secondary-button" id="settings-clear-tide-cards" type="button">卡槽目前为空</button>
+              <button class="secondary-button" id="settings-clear-echoes" type="button">删除全部已保存回响</button>
+            </div>
           </section>
           <section class="settings-card">
             <h2>体验边界</h2>
@@ -366,12 +484,14 @@
           </section>
           <section class="settings-card subtle-card">
             <h2>原型版本</h2>
-            <p>V0.2 · 所有内容仅在浏览器中运行，不发送到网络。</p>
+            <p>V0.4 · 新增今日潮汐日报与情绪陪伴对话。当前演示不连接后端；正式版本需单独获得聊天与个性化数据授权。</p>
           </section>
         </section>
 
         <nav class="bottom-nav" id="bottom-nav" aria-label="主要导航">
           <button type="button" data-nav-target="today-screen" aria-current="page"><span aria-hidden="true">◐</span><strong>今天</strong></button>
+          <button class="chat-nav-button" type="button" data-nav-target="chat-screen"><span aria-hidden="true">◌</span><strong>对话</strong></button>
+          <button type="button" data-nav-target="cards-screen"><span aria-hidden="true">▱</span><strong>卡槽</strong></button>
           <button type="button" data-nav-target="echoes-screen"><span aria-hidden="true">⌁</span><strong>回响</strong></button>
           <button type="button" data-nav-target="settings-screen"><span aria-hidden="true">○</span><strong>我的</strong></button>
         </nav>
@@ -382,24 +502,53 @@
             <span class="modal-icon" aria-hidden="true">◌</span>
             <p class="eyebrow">BEFORE YOU CONTINUE</p>
             <h2 id="safety-title">这里是自我梳理体验，<br />不是专业服务</h2>
-            <p>卡片和回应用于帮助你换一个角度观察当下，不代表心理诊断、人格判断或正确答案，也不能替代心理咨询与医疗支持。</p>
+            <p>卡片、四股潮向、日报和陪伴对话用于帮助你换一个角度观察当下，不代表心理诊断、人格判断、健康水平或正确答案，也不能替代心理咨询与医疗支持。</p>
             <p>如果你或他人正面临即时危险，请暂停体验，联系所在地紧急服务、危机支持资源，或一位能够立刻陪伴你的可信任对象。</p>
             <button class="secondary-button" id="acknowledge-safety" type="button">我知道了</button>
+          </section>
+        </div>
+
+        <div class="modal-backdrop tide-backdrop" id="tide-modal" hidden>
+          <section class="tide-reward-modal" role="dialog" aria-modal="true" aria-labelledby="tide-reward-title">
+            <div class="tide-reward-orbit" aria-hidden="true"><i></i><span id="tide-reward-symbol">◐</span></div>
+            <p class="eyebrow">潮汐短句 · <span id="tide-reward-label">照见</span></p>
+            <h2 id="tide-reward-title">照见，已经来到潮面。</h2>
+            <blockquote id="tide-reward-quote"></blockquote>
+            <p class="tide-reward-description" id="tide-reward-description"></p>
+            <p class="tide-reward-privacy">收进后，本机只保存这张内置卡片的编号和收藏时间；不会保存便贴、选择或潮位。</p>
+            <div class="tide-reward-actions">
+              <button class="text-button" id="skip-tide-quote" type="button">让它经过</button>
+              <button class="primary-button" id="keep-tide-quote" type="button"><span>收进卡槽，继续</span><span aria-hidden="true">→</span></button>
+            </div>
+          </section>
+        </div>
+
+        <div class="modal-backdrop tide-backdrop" id="card-detail-modal" hidden>
+          <section class="tide-reward-modal card-detail-modal" role="dialog" aria-modal="true" aria-labelledby="card-detail-title">
+            <div class="tide-reward-orbit" aria-hidden="true"><i></i><span id="card-detail-symbol">◐</span></div>
+            <p class="eyebrow">潮笺卡槽 · <span id="card-detail-label">照见</span></p>
+            <h2 id="card-detail-title">照见潮笺</h2>
+            <blockquote id="card-detail-quote"></blockquote>
+            <p class="tide-reward-description" id="card-detail-description"></p>
+            <p class="card-detail-date" id="card-detail-date"></p>
+            <button class="primary-button" id="close-card-detail" type="button"><span>收好</span><span aria-hidden="true">↓</span></button>
           </section>
         </div>
       </section>
 
       <aside class="prototype-notes" aria-label="原型说明">
-        <p class="notes-kicker">PRODUCT PROTOTYPE · V0.2</p>
+        <p class="notes-kicker">PRODUCT PROTOTYPE · V0.4</p>
         <h2>从闪念开始，<br />沿同一条线索走到底。</h2>
-        <p>心潮把便贴、Reigns 式选择、三轮回应、微行动和未来回响串成一段连续体验。隐藏信号只改变回应节奏，不生成长期标签。</p>
+        <p>心潮把今日潮汐、便贴、Reigns 式选择、四股潮向、潮笺卡槽、情绪陪伴对话、微行动和未来回响串成一段连续体验。日报可解释、对话可退出，结尾不显示得分或长期标签。</p>
         <ol>
-          <li><span>01</span>闪念便贴</li>
-          <li><span>02</span>主题确认</li>
-          <li><span>03</span>情境选择</li>
-          <li><span>04</span>三轮回应</li>
-          <li><span>05</span>微行动</li>
-          <li><span>06</span>未来回响</li>
+          <li><span>01</span>今日潮汐</li>
+          <li><span>02</span>闪念便贴</li>
+          <li><span>03</span>主题确认</li>
+          <li><span>04</span>情境选择</li>
+          <li><span>05</span>潮笺收集</li>
+          <li><span>06</span>情绪对话</li>
+          <li><span>07</span>微行动</li>
+          <li><span>08</span>未来回响</li>
         </ol>
         <p class="desktop-tip">可用鼠标、触控或键盘完成整条主线</p>
       </aside>

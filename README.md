@@ -7,9 +7,9 @@
 | 版本 | 目录 | 体验重点 |
 | --- | --- | --- |
 | V0.1 | [`prototype-v1/`](prototype-v1/) | Reigns 式二元选择卡与公开四维状态，作为冻结对比基线 |
-| V0.2 | [`prototype/`](prototype/) | 闪念便贴、主题确认、多章节选择、三轮回应、微行动与未来回响 |
+| 当前 V0.4 | [`prototype/`](prototype/) | 今日潮汐日报、闪念与主题、四股潮向、潮笺卡槽、开放式情绪陪伴、微行动与未来回响 |
 
-两个版本的界面源码都是 HTML/CSS/JavaScript。V0.2 同时作为 Ionic + Capacitor 应用的 Web 源码；具体数据处理和安全边界见各目录 README。
+`prototype-v1/` 只作为冻结对比基线；后续产品设计都在 `prototype/` 增量更新，不再为每个小版本复制新目录。当前 `prototype/` 同时作为 Ionic + Capacitor 应用的 Web 源码；具体数据处理和安全边界见目录 README。
 
 ## FastAPI 后端
 
@@ -29,7 +29,7 @@ uv run uvicorn psycho_backend.main:app --reload --host 127.0.0.1 --port 8000
 
 ## Ionic + Capacitor 应用
 
-当前 V0.2 已按 Capacitor 官方的 Ionic 集成流程整理为跨平台项目：
+当前 V0.4 已按 Capacitor 官方的 Ionic 集成流程整理为跨平台项目：
 
 - `prototype/`：HTML/CSS/JavaScript 界面源码
 - `dist/`：Vite 生成的 Web 构建产物，不提交到 Git
