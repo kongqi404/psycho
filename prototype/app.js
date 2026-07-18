@@ -1,6 +1,12 @@
 import {
   ApiError,
-  sendCompanionMessage
+  clearApiSettings,
+  generateNarrative,
+  hasApiSettings,
+  loadApiSettings,
+  saveApiSettings,
+  sendCompanionMessage,
+  testApiConnection
 } from "./api-client.js"
 import {
   ProfileRuntime,
@@ -8,7 +14,10 @@ import {
   deriveProfileActions,
   deriveProfileEchoes,
   deriveProfileReport,
-  deriveThemeCandidates
+  deriveThemeCandidates,
+  evidenceFingerprint,
+  narrativeProfileContext,
+  profileContextForModel
 } from "./profile-runtime.js"
 
 "use strict"
@@ -38,7 +47,7 @@ const answerBookCards = [
   "先问自己想守住什么，再决定需要放下什么。"
 ]
 
-const cards = [
+const defaultCards = [
   {
     speaker: "叙事向导 · 林岚",
     role: "陪你换一个角度",
@@ -148,6 +157,8 @@ const cards = [
     }
   }
 ]
+
+let cards = defaultCards
 
 const genericThemes = [
   "我想看看，为什么总担心自己做得不够好",
@@ -370,12 +381,15 @@ function createFreshFlow() {
     notes: ["", ""],
     personalizeNotes: true,
     images: [],
-    imagesProfiled: false,
+    profiledImageSignatures: [],
     imageRightsConfirmed: false,
     imageError: "",
     themeCandidates: [],
     selectedTheme: "",
     themeSource: "",
+    narrativeState: "fallback",
+    narrativeMessage: "当前使用内置叙事；配置并启用 AI 后可结合画像生成。",
+    narrativeRequest: 0,
     currentCard: 0,
     choices: Array(cards.length).fill(null),
     signals: { certainty: 0, rest: 0, connection: 0, agency: 0 },
@@ -421,6 +435,7 @@ let aiConsentReturnFocus = null
 let pendingAiConsentResolution = null
 let pendingAiConsentPromise = null
 let chatAbortController = null
+let narrativeAbortController = null
 let latestProfileStatus = { state: "idle", message: "尚未启用持续画像" }
 const runtimeTimers = new Set()
 
@@ -472,6 +487,18 @@ function requestId(prefix) {
   return `${prefix}-${Date.now().toString(36)}-${random}`
 }
 
+function imageSignature(file) {
+  return [file.name, file.type, file.size, file.lastModified].join(":")
+}
+
+function createImageEntry(file) {
+  return {
+    file,
+    signature: imageSignature(file),
+    sourceId: requestId("image")
+  }
+}
+
 function profileFocusFor(reason) {
   const focuses = {
     notes: "根据用户刚刚主动提供的闪念和图片更新暂时性画像，并给出可供用户自行确认的主题线索。",
@@ -517,22 +544,6 @@ function buildProfileSnapshot({ reason, previousProfile, capabilities }) {
     })
   })
 
-  if (previousProfile && previousProfile.profile) {
-    const profile = previousProfile.profile
-    const continuity = JSON.stringify({
-      headline: profile.headline,
-      summary: profile.summary,
-      communication_preferences: profile.communication_preferences,
-      needs: (profile.needs_and_preferences || []).map((item) => item.title),
-      uncertainties: profile.uncertainties
-    }).slice(0, 5500)
-    texts.push({
-      source_id: "profile:previous",
-      source: "other",
-      content: `这是用户此前明确授权生成、且可被本次材料修正的结构化画像摘要：${continuity}`
-    })
-  }
-
   flow.choices.forEach((choice, index) => {
     if (!choice) return
     signals.push({
@@ -575,17 +586,31 @@ function buildProfileSnapshot({ reason, previousProfile, capabilities }) {
   }
 
   const maxImages = Math.max(0, Number(capabilities.max_images) || 0)
-  const images = flow.personalizeNotes && !flow.imagesProfiled && flow.imageRightsConfirmed
-    ? flow.images.slice(0, maxImages)
+  const images = flow.personalizeNotes && flow.imageRightsConfirmed
+    ? flow.images
+      .filter((entry) => !flow.profiledImageSignatures.includes(entry.signature))
+      .slice(0, maxImages)
     : []
-  const image_contexts = images.map((_file, index) => ({
-    index,
-    source_id: `image:${index + 1}`,
-    description: "用户主动选择的个人记录图片；只读取其中明确文字、作品或用户给出的语境，不根据外貌推断心理属性。"
+  const image_contexts = images.map((entry) => ({
+    source_id: entry.sourceId,
+    signature: entry.signature,
+    description: "用户主动选择的个人记录图片；只读取其中明确文字、作品、物体或用户给出的语境，不根据人脸、身体、穿着或外貌推断心理属性。"
   }))
+  const activeImageEvidence = flow.personalizeNotes && flow.imageRightsConfirmed
+    ? flow.images.map((entry) => ({
+      source_id: entry.sourceId,
+      signature: entry.signature
+    }))
+    : []
 
   if (texts.length === 0 && signals.length === 0 && images.length === 0) return null
+  const fingerprint = evidenceFingerprint({
+    texts,
+    signals,
+    active_images: activeImageEvidence
+  })
   return {
+    evidenceFingerprint: fingerprint,
     payload: {
       consent: {
         profile_generation: true,
@@ -598,7 +623,8 @@ function buildProfileSnapshot({ reason, previousProfile, capabilities }) {
       analysis_focus: profileFocusFor(reason),
       texts,
       signals,
-      image_contexts
+      image_contexts,
+      previous_profile_context: profileContextForModel(previousProfile)
     },
     images
   }
@@ -615,8 +641,12 @@ function handleProfileUpdated(envelope, _reason, rawResponse) {
     openSafety(null)
     return
   }
-  if (rawResponse && Array.isArray(rawResponse.modalities_used) && rawResponse.modalities_used.includes("image")) {
-    flow.imagesProfiled = true
+  if (Array.isArray(rawResponse?.processed_image_source_ids)) {
+    const processed = new Set(rawResponse.processed_image_source_ids)
+    const signatures = flow.images
+      .filter((entry) => processed.has(entry.sourceId))
+      .map((entry) => entry.signature)
+    flow.profiledImageSignatures = [...new Set([...flow.profiledImageSignatures, ...signatures])]
   }
   applyProfileToVisibleExperience(envelope)
 }
@@ -633,6 +663,10 @@ function applyProfileToVisibleExperience(envelope) {
   }
   if (activeScreenId === "action-screen") renderActionRecommendation()
   if (activeScreenId === "echo-screen") renderEchoCandidates()
+  if (activeScreenId === "overview-screen" && flow.choices.every((choice) => !choice)) {
+    void generateNarrativeForFlow()
+  }
+  if (activeScreenId === "settings-screen") renderInitialImpression()
   renderTodayReport()
   renderAiState()
 }
@@ -641,15 +675,89 @@ function queueProfileRefresh(reason) {
   return profileRuntime.refresh(reason)
 }
 
+function apiSettingsFromForm() {
+  return {
+    baseUrl: byId("custom-api-base-url").value,
+    apiKey: byId("custom-api-key").value,
+    model: byId("custom-api-model").value,
+    imageDetail: byId("custom-api-image-detail").value
+  }
+}
+
+function setApiSettingsStatus(message, state = "idle") {
+  const node = byId("custom-api-status")
+  if (!node) return
+  node.textContent = message
+  node.dataset.state = state
+}
+
+function renderApiSettings() {
+  const settings = loadApiSettings()
+  byId("custom-api-base-url").value = settings.baseUrl
+  byId("custom-api-key").value = settings.apiKey
+  byId("custom-api-model").value = settings.model
+  byId("custom-api-image-detail").value = settings.imageDetail
+  setApiSettingsStatus(
+    hasApiSettings(settings)
+      ? "配置只保存在这台设备；可先测试连接。"
+      : "尚未配置。保存后，浏览器会直接向该端点发送请求。",
+    hasApiSettings(settings) ? "ready" : "idle"
+  )
+}
+
+function saveCustomApiSettings() {
+  try {
+    const settings = saveApiSettings(apiSettingsFromForm())
+    renderApiSettings()
+    setApiSettingsStatus(`已保存到本机：${settings.model}`, "ready")
+    renderAiState()
+  } catch (error) {
+    setApiSettingsStatus(error?.message || "配置保存失败", "error")
+  }
+}
+
+async function testCustomApiSettings() {
+  const button = byId("custom-api-test")
+  button.disabled = true
+  setApiSettingsStatus("正在测试地址、鉴权与浏览器跨域访问…", "updating")
+  try {
+    const result = await testApiConnection({ settings: apiSettingsFromForm() })
+    setApiSettingsStatus(
+      result.modelAvailable
+        ? "连接成功，当前模型可用。保存后即可启用 AI。"
+        : "连接成功，但模型列表中未发现当前模型名；请核对后再保存。",
+      result.modelAvailable ? "ready" : "warning"
+    )
+  } catch (error) {
+    setApiSettingsStatus(error?.message || "连接测试失败", "error")
+  } finally {
+    button.disabled = false
+  }
+}
+
+function clearCustomApiSettings() {
+  clearApiSettings()
+  if (profileRuntime.consent.serviceProcessing) {
+    profileRuntime.setConsent({ serviceProcessing: false, profilePersonalization: false })
+  }
+  renderApiSettings()
+  setApiSettingsStatus("本机 API 地址、模型名和 Key 已清除；现有本机画像未自动删除。", "idle")
+  renderAiState()
+}
+
 function renderAiState() {
   const consent = profileRuntime.consent
   const envelope = profileRuntime.profileEnvelope
   const serviceToggle = byId("ai-service-consent")
   const profileToggle = byId("ai-profile-consent")
-  if (serviceToggle) serviceToggle.checked = consent.serviceProcessing
+  const configured = hasApiSettings()
+  if (serviceToggle) {
+    serviceToggle.checked = consent.serviceProcessing
+    serviceToggle.disabled = !configured
+  }
   if (profileToggle) {
     profileToggle.checked = consent.profilePersonalization
-    profileToggle.disabled = !consent.serviceProcessing
+    profileToggle.disabled = !configured || !consent.serviceProcessing
   }
 
   const statusNodes = [byId("settings-ai-status"), byId("notes-ai-status")].filter(Boolean)
@@ -664,12 +772,16 @@ function renderAiState() {
     if (envelope) {
       byId("settings-profile-headline").textContent = envelope.profile.headline
       byId("settings-profile-summary").textContent = envelope.profile.summary
+      const observationCount = envelope.profile.multimodal_observations?.length || 0
+      const modalityCopy = envelope.modalities_used?.includes("image")
+        ? ` · 含 ${observationCount} 条图片/文本观察`
+        : " · 当前来自文字与互动"
       byId("settings-profile-time").textContent = `最近更新：${new Intl.DateTimeFormat("zh-CN", {
         month: "short",
         day: "numeric",
         hour: "2-digit",
         minute: "2-digit"
-      }).format(new Date(envelope.generated_at))}`
+      }).format(new Date(envelope.generated_at))}${modalityCopy}`
     }
   }
   const clearButton = byId("settings-clear-profile")
@@ -678,7 +790,7 @@ function renderAiState() {
   const privacyLine = byId("today-privacy-line")
   if (privacyLine) {
     privacyLine.lastChild.textContent = consent.serviceProcessing
-      ? " AI 内容按次发送处理；原始聊天不持久保存 · 随时可以关闭"
+      ? " AI 内容直达你配置的服务商；本机不保存原始聊天 · 随时可以关闭"
       : " AI 尚未启用；当前使用本地内容 · 随时可以停下"
   }
 }
@@ -692,6 +804,9 @@ function requestAiConsent({ profileRequested = false, reason = "使用 AI 功能
 
   aiConsentReturnFocus = document.activeElement
   byId("ai-consent-reason").textContent = reason
+  const configured = hasApiSettings()
+  byId("ai-consent-config-warning").hidden = configured
+  byId("enable-ai-consent").disabled = !configured
   const profileCheckbox = byId("consent-profile-personalization")
   profileCheckbox.checked = consent.profilePersonalization
   byId("ai-profile-consent-row").classList.toggle("is-requested", profileRequested)
@@ -756,14 +871,12 @@ function addNoteImages(fileList) {
       errors.push(`最多选择 ${maxImages} 张图片`)
       return
     }
-    const duplicate = next.some((item) => (
-      item.name === file.name && item.size === file.size && item.lastModified === file.lastModified
-    ))
-    if (!duplicate) next.push(file)
+    const signature = imageSignature(file)
+    const duplicate = next.some((item) => item.signature === signature)
+    if (!duplicate) next.push(createImageEntry(file))
   })
 
   flow.images = next
-  flow.imagesProfiled = false
   flow.imageError = errors[0] || ""
   if (flow.images.length === 0) flow.imageRightsConfirmed = false
   renderNoteImages()
@@ -773,7 +886,8 @@ function renderNoteImages() {
   const list = byId("note-image-list")
   if (!list) return
   list.replaceChildren()
-  flow.images.forEach((file, index) => {
+  flow.images.forEach((entry, index) => {
+    const file = entry.file
     const item = document.createElement("div")
     item.className = "note-image-item"
     const copy = document.createElement("span")
@@ -788,7 +902,6 @@ function renderNoteImages() {
     remove.setAttribute("aria-label", `移除图片 ${file.name}`)
     remove.addEventListener("click", () => {
       flow.images.splice(index, 1)
-      flow.imagesProfiled = false
       if (flow.images.length === 0) flow.imageRightsConfirmed = false
       renderNoteImages()
     })
@@ -804,7 +917,10 @@ function renderNoteImages() {
     status.textContent = flow.imageError
     status.dataset.state = "error"
   } else if (flow.images.length > 0) {
-    status.textContent = `已选择 ${flow.images.length} 张；仅在你开启持续画像并确认处理权利后发送一次`
+    const pendingCount = flow.images.filter((entry) => !flow.profiledImageSignatures.includes(entry.signature)).length
+    status.textContent = pendingCount > 0
+      ? `已选择 ${flow.images.length} 张，其中 ${pendingCount} 张将在授权后发送一次；本机只保存模型形成的文字观察`
+      : `这 ${flow.images.length} 张已形成文字观察；原图仍只在本次页面内存中`
     status.dataset.state = "ready"
   } else {
     status.textContent = `可选，最多 ${profileRuntime.capabilities.max_images} 张；图片不会写入本地存储`
@@ -822,6 +938,10 @@ function renderEchoCandidates() {
 }
 
 function initializeAiIntegration() {
+  renderApiSettings()
+  if (!hasApiSettings() && profileRuntime.consent.serviceProcessing) {
+    profileRuntime.setConsent({ serviceProcessing: false, profilePersonalization: false })
+  }
   renderAiState()
   renderNoteImages()
   profileRuntime.initialize().then(() => {
@@ -919,6 +1039,9 @@ function showScreen(screenOrId, options = {}) {
 }
 
 function startFlow(seedNote = "") {
+  narrativeAbortController?.abort()
+  narrativeAbortController = null
+  cards = defaultCards
   flow = createFreshFlow()
   if (seedNote.trim()) flow.notes = [seedNote.trim().slice(0, 120), ""]
   locked = false
@@ -1047,6 +1170,112 @@ function renderThemeOptions() {
   updateThemeControls()
 }
 
+function narrativeText(value, fallback, maxLength = 300) {
+  return typeof value === "string" && value.trim()
+    ? value.trim().replace(/\s+/g, " ").slice(0, maxLength)
+    : fallback
+}
+
+function mergeGeneratedCards(generatedCards) {
+  return defaultCards.map((fallback, index) => {
+    const generated = generatedCards[index] || {}
+    return {
+      speaker: narrativeText(generated.speaker, fallback.speaker, 40),
+      role: narrativeText(generated.role, fallback.role, 60),
+      portrait: narrativeText(generated.portrait, fallback.portrait, 1),
+      tone: ["guide", "body", "friend", "standard", "future", "self"].includes(generated.tone)
+        ? generated.tone
+        : fallback.tone,
+      prompt: narrativeText(generated.prompt, fallback.prompt, 260),
+      whisper: narrativeText(generated.whisper, fallback.whisper, 180),
+      left: {
+        label: narrativeText(generated.left?.label, fallback.left.label, 40),
+        result: narrativeText(generated.left?.result, fallback.left.result, 160),
+        signals: fallback.left.signals
+      },
+      right: {
+        label: narrativeText(generated.right?.label, fallback.right.label, 40),
+        result: narrativeText(generated.right?.result, fallback.right.result, 160),
+        signals: fallback.right.signals
+      }
+    }
+  })
+}
+
+function renderNarrativeState() {
+  const status = byId("narrative-status")
+  if (status) {
+    status.textContent = flow.narrativeMessage
+    status.dataset.state = flow.narrativeState
+  }
+}
+
+async function generateNarrativeForFlow() {
+  if (!flow.selectedTheme || activeScreenId !== "overview-screen") return null
+  if (flow.choices.some(Boolean)) return null
+  if (!profileRuntime.consent.serviceProcessing || !hasApiSettings()) {
+    flow.narrativeState = "fallback"
+    flow.narrativeMessage = "当前使用内置叙事；可在“我的”配置并启用自定义 API。"
+    renderNarrativeState()
+    return null
+  }
+
+  narrativeAbortController?.abort()
+  narrativeAbortController = new AbortController()
+  const request = ++flow.narrativeRequest
+  const theme = flow.selectedTheme
+  const hadGeneratedCards = flow.narrativeState === "ready"
+  flow.narrativeState = "updating"
+  flow.narrativeMessage = activeProfileEnvelope()
+    ? "正在后台结合本机画像生成这一章；你仍可返回修改主题。"
+    : "正在后台根据本次主题生成这一章；画像准备好后还会继续修正。"
+  renderNarrativeState()
+
+  try {
+    const response = await generateNarrative({
+      theme,
+      profileContext: narrativeProfileContext(activeProfileEnvelope()),
+      signal: narrativeAbortController.signal
+    })
+    if (
+      request !== flow.narrativeRequest ||
+      theme !== flow.selectedTheme ||
+      activeScreenId !== "overview-screen" ||
+      flow.choices.some(Boolean)
+    ) return null
+    cards = mergeGeneratedCards(response.result.cards)
+    flow.choices = Array(cards.length).fill(null)
+    byId("overview-title").textContent = narrativeText(
+      response.result.title,
+      "在反复确认之前，先听见自己",
+      90
+    )
+    byId("overview-narrative-intro").textContent = narrativeText(
+      response.result.intro,
+      "这六个情境会沿着本次线索展开，没有标准答案。",
+      180
+    )
+    const includesImage = activeProfileEnvelope()?.modalities_used?.includes("image")
+    flow.narrativeState = "ready"
+    flow.narrativeMessage = includesImage
+      ? "本章由自定义模型结合本机多模态文字画像生成；潮向规则仍由本地固定逻辑控制。"
+      : "本章由自定义模型结合主题与本机文字画像生成；潮向规则仍由本地固定逻辑控制。"
+    renderNarrativeState()
+    return response
+  } catch (error) {
+    if (error instanceof ApiError && error.code === "client_aborted") return null
+    if (!hadGeneratedCards) cards = defaultCards
+    flow.narrativeState = hadGeneratedCards ? "ready" : "fallback"
+    flow.narrativeMessage = hadGeneratedCards
+      ? "画像更新后的叙事刷新暂时失败，已保留刚才生成的版本。"
+      : `自定义叙事暂时不可用，已使用内置版本：${error?.message || "未知错误"}`
+    renderNarrativeState()
+    return null
+  } finally {
+    if (request === flow.narrativeRequest) narrativeAbortController = null
+  }
+}
+
 function resetDownstreamFlow() {
   flow.currentCard = 0
   flow.choices = Array(cards.length).fill(null)
@@ -1070,9 +1299,18 @@ function resetDownstreamFlow() {
 }
 
 function showOverview() {
+  narrativeAbortController?.abort()
+  narrativeAbortController = null
+  cards = defaultCards
   byId("overview-theme").textContent = `“${flow.selectedTheme}”`
+  byId("overview-title").textContent = "在反复确认之前，先听见自己"
+  byId("overview-narrative-intro").textContent = "这六个情境会沿着本次线索展开，没有标准答案。"
+  flow.narrativeState = "fallback"
+  flow.narrativeMessage = "当前使用内置叙事；正在检查是否可以调用你的自定义模型。"
   resetDownstreamFlow()
   showScreen("overview-screen")
+  renderNarrativeState()
+  void generateNarrativeForFlow()
 }
 
 function recomputeSignals() {
@@ -1328,7 +1566,7 @@ function renderDailyReport() {
   })
 
   byId("report-source-copy").textContent = report.profileDriven
-    ? "这份日报由你明确开启的本机结构化画像生成。画像可被新输入修正；原始图片和聊天不会写入画像存储，也不会显示心理分数。可在「我的」中关闭或删除。"
+    ? "这份日报由你明确开启的本机多模态文字画像生成。画像可被新输入修正；原图和聊天原文不会写入画像存储，也不会显示心理分数。可在「我的」中关闭或删除。"
     : (report.personalized
       ? `这份日报根据近 30 天的${report.signalSources.join("与")}生成，不展示隐藏分数。当前相对突出的可解释信号是「${tideMeta[report.dominant].label}」。`
       : "目前还没有足够的可解释信号，所以显示通用基础版。留下闪念或主动收藏潮笺后，日报会逐渐贴近近期需要。")
@@ -1470,6 +1708,8 @@ function renderCard() {
 }
 
 function beginGame() {
+  narrativeAbortController?.abort()
+  narrativeAbortController = null
   if (flow.choices.every(Boolean)) {
     beginChat()
     return
@@ -1624,7 +1864,7 @@ function renderChat() {
       : (flow.chatBusy
         ? "潮伴正在组织一句回应……"
         : (profileRuntime.consent.serviceProcessing
-          ? "消息按次发送给 AI；后端不建立会话存储"
+          ? "消息按次直达你配置的 AI 服务商；本机不保存对话原文"
           : "AI 尚未启用；回复会使用本地降级规则")))
 
   window.requestAnimationFrame(() => {
@@ -1981,6 +2221,27 @@ function drawAnswerBookCard() {
 }
 
 function renderInitialImpression() {
+  const aiEnvelope = activeProfileEnvelope()
+  if (aiEnvelope?.profile) {
+    const profile = aiEnvelope.profile
+    const chips = [
+      ...(profile.current_state || []).map((item) => item.title),
+      ...(profile.needs_and_preferences || []).map((item) => item.title),
+      ...(profile.strengths_and_resources || []).map((item) => item.title)
+    ].filter((item, index, items) => item && items.indexOf(item) === index)
+    if (aiEnvelope.modalities_used?.includes("image")) chips.unshift("结合了图片与文字观察")
+    byId("impression-title").textContent = profile.headline
+    byId("impression-summary").textContent = `${profile.summary} 这仍是可被你纠正的暂时性观察，不是固定标签。`
+    const container = byId("impression-chips")
+    container.replaceChildren()
+    chips.slice(0, 3).forEach((copy) => {
+      const chip = document.createElement("span")
+      chip.textContent = copy
+      container.append(chip)
+    })
+    return
+  }
+
   const quickNotes = readQuickNotes()
   const noteCount = quickNotes.length
   const tideRecords = readTideCardRecords()
@@ -3148,6 +3409,14 @@ byId("finish-flow").addEventListener("click", finishFlow)
 byId("clear-echoes").addEventListener("click", clearAllEchoes)
 byId("settings-clear-echoes").addEventListener("click", clearAllEchoes)
 byId("settings-clear-tide-cards").addEventListener("click", clearAllTideCards)
+byId("custom-api-save").addEventListener("click", saveCustomApiSettings)
+byId("custom-api-test").addEventListener("click", () => void testCustomApiSettings())
+byId("custom-api-clear").addEventListener("click", clearCustomApiSettings)
+document.querySelectorAll("[data-custom-api-field]").forEach((field) => {
+  field.addEventListener("input", () => {
+    setApiSettingsStatus("表单有未保存的修改；测试不会自动保存。", "warning")
+  })
+})
 byId("enable-ai-consent").addEventListener("click", () => closeAiConsent({ accepted: true }))
 byId("decline-ai-consent").addEventListener("click", () => closeAiConsent({ accepted: false }))
 byId("ai-service-consent").addEventListener("change", (event) => {
