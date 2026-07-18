@@ -12,6 +12,13 @@
     <main class="prototype-stage">
       <section class="phone" id="app-shell" aria-label="心潮移动端产品原型">
         <div class="grain" aria-hidden="true"></div>
+        <audio id="background-music" loop preload="metadata">
+          <source src="assets/sleepy-rain.mp3" type="audio/mpeg" />
+        </audio>
+        <button class="ambient-music-toggle" id="background-music-toggle" type="button" aria-label="播放雨声背景音乐" aria-pressed="false">
+          <span class="ambient-music-bars" aria-hidden="true"><i></i><i></i><i></i><i></i></span>
+          <span class="ambient-music-copy"><strong>雨声</strong><small id="background-music-status">播放</small></span>
+        </button>
 
         <section class="screen today-screen" id="today-screen" aria-labelledby="today-title">
           <header class="app-header">
@@ -191,10 +198,10 @@
           <section class="tide-legend" aria-label="本章四股潮向">
             <div class="tide-legend-heading"><strong>四股潮向</strong><span>本章资源 · 不是测评</span></div>
             <div class="tide-legend-items">
-              <span><b aria-hidden="true">◐</b>照见</span>
-              <span><b aria-hidden="true">⌁</b>安住</span>
-              <span><b aria-hidden="true">∞</b>相连</span>
-              <span><b aria-hidden="true">✦</b>余力</span>
+              <span><b aria-hidden="true">◐</b>觉察</span>
+              <span><b aria-hidden="true">⌁</b>安定</span>
+              <span><b aria-hidden="true">∞</b>联结</span>
+              <span><b aria-hidden="true">✦</b>精力</span>
             </div>
             <p>选择会改变潮位；满潮时，一张短句会来到途中。章节结束不计算总分。</p>
           </section>
@@ -228,17 +235,17 @@
           </div>
 
           <div class="tide-meters" id="tide-meters" aria-label="本章四股潮向；满潮会遇见一张短句">
-            <div class="tide-meter" data-tide="insight" role="progressbar" aria-label="照见" aria-valuemin="0" aria-valuemax="100" aria-valuenow="32">
-              <span class="tide-meter-label"><b aria-hidden="true">◐</b><small>照见</small></span><i class="tide-track"><span></span></i>
+            <div class="tide-meter" data-tide="insight" role="progressbar" aria-label="觉察" aria-valuemin="0" aria-valuemax="100" aria-valuenow="32">
+              <span class="tide-meter-label"><b aria-hidden="true">◐</b><small>觉察</small></span><i class="tide-track"><span></span></i>
             </div>
-            <div class="tide-meter" data-tide="grounding" role="progressbar" aria-label="安住" aria-valuemin="0" aria-valuemax="100" aria-valuenow="32">
-              <span class="tide-meter-label"><b aria-hidden="true">⌁</b><small>安住</small></span><i class="tide-track"><span></span></i>
+            <div class="tide-meter" data-tide="grounding" role="progressbar" aria-label="安定" aria-valuemin="0" aria-valuemax="100" aria-valuenow="32">
+              <span class="tide-meter-label"><b aria-hidden="true">⌁</b><small>安定</small></span><i class="tide-track"><span></span></i>
             </div>
-            <div class="tide-meter" data-tide="connection" role="progressbar" aria-label="相连" aria-valuemin="0" aria-valuemax="100" aria-valuenow="32">
-              <span class="tide-meter-label"><b aria-hidden="true">∞</b><small>相连</small></span><i class="tide-track"><span></span></i>
+            <div class="tide-meter" data-tide="connection" role="progressbar" aria-label="联结" aria-valuemin="0" aria-valuemax="100" aria-valuenow="32">
+              <span class="tide-meter-label"><b aria-hidden="true">∞</b><small>联结</small></span><i class="tide-track"><span></span></i>
             </div>
-            <div class="tide-meter" data-tide="vitality" role="progressbar" aria-label="余力" aria-valuemin="0" aria-valuemax="100" aria-valuenow="32">
-              <span class="tide-meter-label"><b aria-hidden="true">✦</b><small>余力</small></span><i class="tide-track"><span></span></i>
+            <div class="tide-meter" data-tide="vitality" role="progressbar" aria-label="精力" aria-valuemin="0" aria-valuemax="100" aria-valuenow="32">
+              <span class="tide-meter-label"><b aria-hidden="true">✦</b><small>精力</small></span><i class="tide-track"><span></span></i>
             </div>
           </div>
 
@@ -420,46 +427,71 @@
           <div class="screen-heading library-heading thoughts-heading">
             <p class="eyebrow">QUICK THOUGHTS</p>
             <h1 id="thoughts-title" tabindex="-1">闪念</h1>
-            <p>先把掠过脑海的一句话放下来，不必整理，也不用马上进入章节。</p>
+            <p>写一句、放一张图片，或者用声音说下来。不同形式也可以留在同一条闪念里。</p>
           </div>
-
-          <form class="quick-note-composer" id="quick-note-form">
-            <label for="quick-note-input">此刻想记下什么？</label>
-            <textarea id="quick-note-input" maxlength="200" rows="4" placeholder="一句话、一个画面，或还说不清的感受……"></textarea>
-            <div class="quick-note-media-actions">
-              <label class="quick-note-photo-button" for="quick-note-photo-input">
-                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7.5h3l1.3-2h7.4l1.3 2h3v11H4z"></path><circle cx="12" cy="13" r="3.2"></circle></svg>
-                <span>随手拍 / 添加图片</span>
-              </label>
-              <input class="sr-only" id="quick-note-photo-input" type="file" accept="image/*" capture="environment" />
-              <small>图片会压缩成预览图，和便签一起留在本机</small>
-            </div>
-            <div class="quick-note-photo-preview" id="quick-note-photo-preview" hidden>
-              <img id="quick-note-photo-image" alt="待保存的随手拍预览" />
-              <button id="remove-quick-note-photo" type="button">移除图片</button>
-            </div>
-            <div class="quick-note-meta">
-              <span id="quick-note-count">0 / 200</span>
-              <span>明确保存后才会留在本机</span>
-            </div>
-            <button class="primary-button" id="save-quick-note" type="submit" disabled><span>收好这张便签</span><span aria-hidden="true">↓</span></button>
-            <p class="form-hint" id="quick-note-status" role="status">不会自动进入日报、画像或聊天</p>
-          </form>
 
           <section class="quick-note-library" aria-labelledby="quick-note-library-title">
             <div class="quick-note-library-heading">
-              <h2 id="quick-note-library-title">留在这台设备上的闪念</h2>
+              <h2 id="quick-note-library-title">最近的闪念</h2>
               <span id="quick-note-total">0 张</span>
             </div>
             <div class="quick-note-list" id="quick-note-list" aria-live="polite"></div>
-            <div class="empty-state quick-note-empty" id="quick-note-empty">
-              <span aria-hidden="true">＋</span>
-              <h2>还没有留下便签</h2>
-              <p>想到什么就写一点。之后也可以主动选择一张，带它进入章节继续梳理。</p>
+            <div class="quick-note-deck-nav" id="quick-note-deck-nav" hidden>
+              <button id="quick-note-deck-previous" type="button" aria-label="查看上一张闪念">←</button>
+              <span id="quick-note-deck-position">1 / 1</span>
+              <button id="quick-note-deck-next" type="button" aria-label="查看下一张闪念">→</button>
             </div>
+            <div class="quick-note-stack-empty" id="quick-note-stack-empty">
+              <span aria-hidden="true"></span>
+              <strong>还没有留下闪念</strong>
+              <small>从下面写、拍或说一点。它们会在这里一张张叠起来。</small>
+            </div>
+            <p class="quick-note-library-status" id="quick-note-library-status" role="status"></p>
           </section>
 
-          <p class="quick-note-privacy"><span aria-hidden="true">⌁</span>便签默认只保存在当前浏览器；你可以单张删除，也可以在「我的」中全部清空。</p>
+          <form class="quick-note-composer" id="quick-note-form">
+            <div class="quick-note-paper-heading">
+              <span>随手便签</span>
+              <small>写 · 拍 · 说</small>
+            </div>
+            <div class="quick-note-composer-preview" id="quick-note-composer-preview" hidden>
+              <div class="quick-note-photo-preview" id="quick-note-photo-preview" hidden>
+                <img id="quick-note-photo-image" alt="待提交的闪念图片预览" />
+                <button id="remove-quick-note-photo" type="button" aria-label="移除图片">×</button>
+              </div>
+              <div class="quick-note-voice-preview" id="quick-note-voice-preview" hidden>
+                <span class="quick-note-voice-dot" aria-hidden="true"></span>
+                <div><strong>语音闪念</strong><small id="quick-note-voice-duration">0:01</small></div>
+                <button id="remove-quick-note-voice" type="button">移除</button>
+              </div>
+            </div>
+
+            <div class="quick-note-message-bar">
+              <div class="quick-note-attachment-control">
+                <button class="quick-note-plus-button" id="quick-note-add-attachment" type="button" aria-label="添加图片" aria-expanded="false" aria-controls="quick-note-attachment-menu">＋</button>
+                <div class="quick-note-attachment-menu" id="quick-note-attachment-menu" hidden>
+                  <label for="quick-note-photo-input">
+                    <span aria-hidden="true">▧</span><div><strong>图片</strong><small>从相册选择</small></div>
+                  </label>
+                  <label for="quick-note-camera-input">
+                    <span aria-hidden="true">◎</span><div><strong>随手拍</strong><small>拍下此刻</small></div>
+                  </label>
+                </div>
+              </div>
+              <input class="sr-only" id="quick-note-photo-input" type="file" accept="image/*" />
+              <input class="sr-only" id="quick-note-camera-input" type="file" accept="image/*" capture="environment" />
+              <label class="sr-only" for="quick-note-input">此刻想记下什么？</label>
+              <textarea id="quick-note-input" maxlength="200" rows="1" placeholder="留下一点此刻的想法……"></textarea>
+              <button class="quick-note-voice-button" id="quick-note-voice" type="button" aria-label="开始录制语音闪念" aria-pressed="false">
+                <svg class="mic-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3a3 3 0 0 0-3 3v6a3 3 0 0 0 6 0V6a3 3 0 0 0-3-3Z"></path><path d="M5.5 11.5a6.5 6.5 0 0 0 13 0M12 18v3M9 21h6"></path></svg>
+              </button>
+              <button class="quick-note-send-button" id="save-quick-note" type="submit" aria-label="提交闪念" disabled>↑</button>
+            </div>
+            <div class="quick-note-composer-meta">
+              <span id="quick-note-count">0 / 200</span>
+              <span id="quick-note-status" role="status">提交后自动保存，并用于更新初印象与个性化内容</span>
+            </div>
+          </form>
         </section>
 
         <section class="screen library-screen card-slot-screen" id="cards-screen" aria-labelledby="cards-title" hidden>
@@ -531,14 +563,14 @@
             </div>
           </section>
           <section class="settings-card">
-            <h2>留在这台设备上的内容</h2>
+            <h2>你的内容与偏好</h2>
             <dl>
-              <div><dt>随手闪念</dt><dd>文字与压缩预览图只有在你点击保存后才留在本机</dd></div>
+              <div><dt>随手闪念</dt><dd>提交后自动收进闪念，并参与更新初印象与个性化内容</dd></div>
               <div><dt>潮笺与回响</dt><dd>只保留你主动收下的内容，可以在下方随时清空</dd></div>
               <div><dt>对话与语音</dt><dd>当前均为前端演示，离开页面后结束</dd></div>
             </dl>
             <div class="settings-actions">
-              <button class="secondary-button" id="settings-clear-quick-notes" type="button">没有已保存的闪念</button>
+              <button class="secondary-button" type="button" data-nav-target="thoughts-screen">查看与管理闪念</button>
               <button class="secondary-button" id="settings-clear-tide-cards" type="button">卡槽目前为空</button>
               <button class="secondary-button" id="settings-clear-echoes" type="button">删除全部已保存回响</button>
             </div>
@@ -592,8 +624,8 @@
         <div class="modal-backdrop tide-backdrop" id="tide-modal" hidden>
           <section class="tide-reward-modal" role="dialog" aria-modal="true" aria-labelledby="tide-reward-title">
             <div class="tide-reward-orbit" aria-hidden="true"><i></i><span id="tide-reward-symbol">◐</span></div>
-            <p class="eyebrow">潮汐短句 · <span id="tide-reward-label">照见</span></p>
-            <h2 id="tide-reward-title">照见，已经来到潮面。</h2>
+            <p class="eyebrow">潮汐短句 · <span id="tide-reward-label">觉察</span></p>
+            <h2 id="tide-reward-title">觉察，已经来到潮面。</h2>
             <blockquote id="tide-reward-quote"></blockquote>
             <p class="tide-reward-description" id="tide-reward-description"></p>
             <p class="tide-reward-privacy">收进后，本机只保存这张内置卡片的编号和收藏时间；不会保存便贴、选择或潮位。</p>
@@ -607,8 +639,8 @@
         <div class="modal-backdrop tide-backdrop" id="card-detail-modal" hidden>
           <section class="tide-reward-modal card-detail-modal" role="dialog" aria-modal="true" aria-labelledby="card-detail-title">
             <div class="tide-reward-orbit" aria-hidden="true"><i></i><span id="card-detail-symbol">◐</span></div>
-            <p class="eyebrow">潮笺卡槽 · <span id="card-detail-label">照见</span></p>
-            <h2 id="card-detail-title">照见潮笺</h2>
+            <p class="eyebrow">潮笺卡槽 · <span id="card-detail-label">觉察</span></p>
+            <h2 id="card-detail-title">觉察潮笺</h2>
             <blockquote id="card-detail-quote"></blockquote>
             <p class="tide-reward-description" id="card-detail-description"></p>
             <p class="card-detail-date" id="card-detail-date"></p>

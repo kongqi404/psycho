@@ -2,7 +2,6 @@
 
 const STORAGE_KEY = "xinchao.future-echoes.v1"
 const CARD_STORAGE_KEY = "xinchao.tide-cards.v1"
-const QUICK_NOTE_STORAGE_KEY = "xinchao.quick-notes.v1"
 const QUICK_NOTE_MAX_LENGTH = 200
 const QUICK_NOTE_LIMIT = 50
 const ANSWER_BOOK_STORAGE_KEY = "xinchao.answer-book.v1"
@@ -200,7 +199,7 @@ const TIDE_THRESHOLD = 88
 
 const tideMeta = {
   insight: {
-    label: "照见",
+    label: "觉察",
     symbol: "◐",
     description: "辨认念头、感受与正在发生的模式",
     quotes: [
@@ -210,7 +209,7 @@ const tideMeta = {
     ]
   },
   grounding: {
-    label: "安住",
+    label: "安定",
     symbol: "⌁",
     description: "为身体、边界与当下留出落脚处",
     quotes: [
@@ -220,7 +219,7 @@ const tideMeta = {
     ]
   },
   connection: {
-    label: "相连",
+    label: "联结",
     symbol: "∞",
     description: "与他人，也与内在不同的声音保持联系",
     quotes: [
@@ -230,7 +229,7 @@ const tideMeta = {
     ]
   },
   vitality: {
-    label: "余力",
+    label: "精力",
     symbol: "✦",
     description: "照顾当下可用的力气，也允许疲惫存在",
     quotes: [
@@ -284,9 +283,9 @@ const dailyReportVariants = {
   },
   insight: {
     headline: "今天很适合看清重点，但不必把每个念头都解释完。",
-    basis: ["近期主动收藏了照见潮笺", "这类潮笺靠近观察与命名"],
+    basis: ["近期主动收藏了觉察潮笺", "这类潮笺靠近观察与命名"],
     quote: "先把问题照亮一角，答案可以慢一点来。",
-    summary: "你近期主动收进卡槽的内容包含「照见」潮笺。它只提供一个可解释的内容线索，不代表固定人格。",
+    summary: "你近期主动收进卡槽的内容包含「觉察」潮笺。它只提供一个可解释的内容线索，不代表固定人格。",
     suggestions: [
       ["聚焦", "把脑中的问题写成一句话，只处理最想看清的那一部分。"],
       ["停笔", "反复分析超过十分钟时，先做一件不需要答案的小事。"],
@@ -295,9 +294,9 @@ const dailyReportVariants = {
   },
   grounding: {
     headline: "今天适合把步子放稳一点，先照顾身体和边界。",
-    basis: ["近期主动收藏了安住潮笺", "这类潮笺靠近身体与边界"],
+    basis: ["近期主动收藏了安定潮笺", "这类潮笺靠近身体与边界"],
     quote: "先让脚底找到地面，答案可以晚一点来。",
-    summary: "你近期主动收下的内容更靠近「安住」。日报因此把建议放在减速、边界和身体信号上。",
+    summary: "你近期主动收下的内容更靠近「安定」。日报因此把建议放在减速、边界和身体信号上。",
     suggestions: [
       ["节奏", "给今天安排一个明确停点，到了就先离开正在做的事。"],
       ["身体", "喝水、松开肩膀，再确认自己是否真的需要继续硬撑。"],
@@ -306,9 +305,9 @@ const dailyReportVariants = {
   },
   connection: {
     headline: "今天可以靠近一点真实，也保留只说到这里的权利。",
-    basis: ["近期主动收藏了相连潮笺", "这类潮笺靠近表达与联结"],
+    basis: ["近期主动收藏了联结潮笺", "这类潮笺靠近表达与关系"],
     quote: "真实不必一次说完，关系可以从一句话开始。",
-    summary: "你近期主动收下的内容更靠近「相连」。这份日报会优先提供表达、倾听和关系边界方面的小建议。",
+    summary: "你近期主动收下的内容更靠近「联结」。这份日报会优先提供表达、倾听和关系边界方面的小建议。",
     suggestions: [
       ["表达", "想联系谁时，先发一句近况，不必组织成完整故事。"],
       ["倾听", "聊天前可以先说清楚：此刻更需要陪伴，还是一起想办法。"],
@@ -317,9 +316,9 @@ const dailyReportVariants = {
   },
   vitality: {
     headline: "今天有一些向前的力量，也别忘了给自己留下余力。",
-    basis: ["近期主动收藏了余力潮笺", "这类潮笺靠近小步行动与恢复"],
+    basis: ["近期主动收藏了精力潮笺", "这类潮笺靠近小步行动与恢复"],
     quote: "今天留下的一点力气，也属于完成的一部分。",
-    summary: "你近期主动收下的内容更靠近「余力」。这份日报会提醒你推进一件事，同时避免把可用的力气一次耗尽。",
+    summary: "你近期主动收下的内容更靠近「精力」。这份日报会提醒你推进一件事，同时避免把可用的力气一次耗尽。",
     suggestions: [
       ["行动", "只推进一个核心任务，其他事项先放进稍后清单。"],
       ["恢复", "在还有力气的时候就安排休息，而不是等到完全耗尽。"],
@@ -338,6 +337,8 @@ function createInitialTides() {
 const byId = (id) => document.getElementById(id)
 const screens = Array.from(document.querySelectorAll(".screen"))
 const bottomNav = byId("bottom-nav")
+const backgroundMusic = byId("background-music")
+const backgroundMusicToggle = byId("background-music-toggle")
 const storyCard = byId("story-card")
 const leftPreview = byId("left-preview")
 const rightPreview = byId("right-preview")
@@ -346,6 +347,7 @@ const voiceModal = byId("voice-modal")
 const tideModal = byId("tide-modal")
 const cardDetailModal = byId("card-detail-modal")
 const topLevelScreens = new Set(["today-screen", "thoughts-screen", "chat-screen", "cards-screen", "echoes-screen", "settings-screen"])
+const musicControlScreens = new Set(["today-screen", "thoughts-screen", "cards-screen", "echoes-screen", "settings-screen"])
 
 function createFreshFlow() {
   return {
@@ -385,7 +387,12 @@ let dragX = 0
 let onboardingReturnFocus = null
 let voiceModalReturnFocus = null
 let cardDetailReturnFocus = null
+let quickNoteRecords = []
+let quickNoteDeckOffset = 0
 let pendingQuickNoteImage = ""
+let pendingQuickNoteVoiceDuration = 0
+let quickNoteVoiceStartedAt = 0
+let quickNoteRecordingTimer = null
 let voiceInputActive = false
 let ephemeralAnswerRecord = null
 const runtimeTimers = new Set()
@@ -412,6 +419,7 @@ function focusScreenHeading(screen) {
 
 function updateBottomNavigation(screenId) {
   bottomNav.hidden = !topLevelScreens.has(screenId)
+  backgroundMusicToggle.hidden = !musicControlScreens.has(screenId)
   bottomNav.querySelectorAll("[data-nav-target]").forEach((button) => {
     if (button.dataset.navTarget === screenId) {
       button.setAttribute("aria-current", "page")
@@ -419,6 +427,31 @@ function updateBottomNavigation(screenId) {
       button.removeAttribute("aria-current")
     }
   })
+}
+
+function syncBackgroundMusicButton() {
+  const isPlaying = !backgroundMusic.paused
+  backgroundMusicToggle.classList.toggle("is-playing", isPlaying)
+  backgroundMusicToggle.setAttribute("aria-pressed", String(isPlaying))
+  backgroundMusicToggle.setAttribute("aria-label", isPlaying ? "暂停雨声背景音乐" : "播放雨声背景音乐")
+  byId("background-music-status").textContent = isPlaying ? "播放中" : "播放"
+}
+
+async function toggleBackgroundMusic() {
+  if (backgroundMusic.paused) {
+    backgroundMusic.volume = 0.22
+    try {
+      await backgroundMusic.play()
+    } catch (_error) {
+      backgroundMusicToggle.disabled = true
+      backgroundMusicToggle.setAttribute("aria-label", "雨声背景音乐暂时无法播放")
+      byId("background-music-status").textContent = "不可用"
+      return
+    }
+  } else {
+    backgroundMusic.pause()
+  }
+  syncBackgroundMusicButton()
 }
 
 function showScreen(screenOrId, options = {}) {
@@ -433,6 +466,9 @@ function showScreen(screenOrId, options = {}) {
       flow.chatSeed = ""
       byId("chat-input").value = ""
     }
+  }
+  if (activeScreenId === "thoughts-screen" && target.id !== "thoughts-screen") {
+    resetQuickNoteComposer()
   }
 
   screens.forEach((screen) => {
@@ -450,7 +486,7 @@ function showScreen(screenOrId, options = {}) {
   if (target.id === "report-screen") renderDailyReport()
   if (target.id === "thoughts-screen") {
     renderQuickNotes()
-    byId("quick-note-status").textContent = "不会自动进入日报、画像或聊天"
+    byId("quick-note-library-status").textContent = ""
   }
   if (target.id === "chat-screen") renderChat()
   if (target.id === "cards-screen") renderTideCardLibrary()
@@ -744,17 +780,36 @@ function formatDailyDate() {
 function buildDailyReport() {
   const windowStart = Date.now() - 30 * DAY_MS
   const records = readTideCardRecords().filter((record) => record.collectedAt >= windowStart)
+  const quickNotes = readQuickNotes().filter((record) => record.createdAt >= windowStart)
   const counts = Object.keys(tideMeta).reduce((result, key) => {
     result[key] = 0
     return result
   }, {})
   const latestByTide = {}
+  let cardSignalCount = 0
+  let noteSignalCount = 0
 
   records.forEach((record) => {
     const card = tideCardFromId(record.id)
     if (!card) return
     counts[card.key] += 1
+    cardSignalCount += 1
     latestByTide[card.key] = Math.max(latestByTide[card.key] || 0, record.collectedAt)
+  })
+
+  const notePatterns = {
+    insight: /想|觉得|发现|为什么|意识到|原来|反复想/,
+    grounding: /焦虑|担心|害怕|不安|紧张|身体|边界|停一下/,
+    connection: /朋友|家人|同事|关系|孤独|想念|陪伴|沟通/,
+    vitality: /累|疲惫|休息|睡|撑不住|没力气|行动|开始/
+  }
+  quickNotes.forEach((record) => {
+    Object.entries(notePatterns).forEach(([key, pattern]) => {
+      if (!pattern.test(record.text)) return
+      counts[key] += 1
+      noteSignalCount += 1
+      latestByTide[key] = Math.max(latestByTide[key] || 0, record.createdAt)
+    })
   })
 
   const ranked = Object.entries(counts).sort((a, b) => {
@@ -764,11 +819,26 @@ function buildDailyReport() {
   })
   const dominant = ranked[0] && ranked[0][1] > 0 ? ranked[0][0] : "generic"
   const variant = dailyReportVariants[dominant]
+  const signalSources = [
+    noteSignalCount > 0 ? "闪念主题" : "",
+    cardSignalCount > 0 ? "主动收藏的潮笺类型" : ""
+  ].filter(Boolean)
   return {
     ...variant,
+    basis: dominant === "generic"
+      ? variant.basis
+      : [
+          noteSignalCount > 0 ? "近期闪念里出现了可解释的主题线索" : "",
+          cardSignalCount > 0 ? "近期主动收藏了相关潮笺" : "",
+          `这些线索更靠近「${tideMeta[dominant].label}」`
+        ].filter(Boolean).slice(0, 2),
+    summary: dominant === "generic"
+      ? variant.summary
+      : `这份日报参考了${signalSources.join("和")}，当前更靠近「${tideMeta[dominant].label}」。它不是对你的固定判断，新的表达会继续修正它。`,
     dominant,
     personalized: dominant !== "generic",
-    mode: dominant === "generic" ? "基础日报" : `根据近 30 天${tideMeta[dominant].label}潮笺`,
+    mode: dominant === "generic" ? "基础日报" : `根据近期${signalSources.join("与")}`,
+    signalSources,
     date: formatDailyDate()
   }
 }
@@ -818,8 +888,8 @@ function renderDailyReport() {
   })
 
   byId("report-source-copy").textContent = report.personalized
-    ? `这份日报只根据近 30 天内你主动收进本机卡槽的潮笺类型生成，没有读取闪念、聊天原文或隐藏分数。当前相对突出的可解释信号是「${tideMeta[report.dominant].label}」。`
-    : "目前还没有足够的可解释信号，所以显示通用基础版。完成章节并主动收藏潮笺后，日报才会逐渐贴近近期倾向。"
+    ? `这份日报根据近 30 天的${report.signalSources.join("与")}生成，不读取聊天原文，也不展示隐藏分数。当前相对突出的可解释信号是「${tideMeta[report.dominant].label}」。`
+    : "目前还没有足够的可解释信号，所以显示通用基础版。留下闪念或主动收藏潮笺后，日报会逐渐贴近近期需要。"
 }
 
 function recomputeTides(stirredKeys = []) {
@@ -1322,7 +1392,8 @@ function drawAnswerBookCard() {
 }
 
 function renderInitialImpression() {
-  const noteCount = readQuickNotes().length
+  const quickNotes = readQuickNotes()
+  const noteCount = quickNotes.length
   const tideRecords = readTideCardRecords()
   const echoCount = readEchoes().length
   const tideCounts = tideRecords.reduce((counts, record) => {
@@ -1331,18 +1402,28 @@ function renderInitialImpression() {
     return counts
   }, {})
   const dominantTide = Object.entries(tideCounts).sort((a, b) => b[1] - a[1])[0]?.[0]
+  const noteText = quickNotes.map((record) => record.text).join(" ")
+  const noteSignals = [
+    { pattern: /累|疲惫|休息|睡|撑不住|没力气/, chip: "近期更需要恢复精力", title: "最近的闪念里，休息和恢复正在更常被提起。" },
+    { pattern: /担心|焦虑|害怕|不安|紧张|不够好|失败/, chip: "正在寻找更多安定感", title: "最近的闪念里，确定感与安定感似乎很重要。" },
+    { pattern: /朋友|家人|同事|关系|孤独|想念|陪伴/, chip: "在意关系里的靠近与边界", title: "最近的闪念里，关系与联结出现得更多。" },
+    { pattern: /想|觉得|发现|为什么|意识到|原来/, chip: "愿意观察正在发生的念头", title: "你正在给一闪而过的念头更多被看见的机会。" }
+  ].filter((signal) => signal.pattern.test(noteText))
   const chips = []
 
-  if (noteCount > 0) chips.push("会接住一闪而过的想法")
+  noteSignals.forEach((signal) => chips.push(signal.chip))
+  if (quickNotes.some((record) => record.imageData)) chips.push("会用画面保存当下")
+  if (quickNotes.some((record) => record.voiceDuration > 0)) chips.push("愿意用声音表达感受")
+  if (noteCount > 0 && chips.length === 0) chips.push("会接住一闪而过的想法")
   if (dominantTide && tideMeta[dominantTide]) chips.push(`最近更靠近「${tideMeta[dominantTide].label}」`)
   if (echoCount > 0) chips.push("愿意和未来的自己对话")
   if (readAnswerBookRecord()) chips.push("愿意给直觉一点空间")
   if (chips.length === 0) chips.push("愿意慢慢认识自己", "不急着给出结论")
 
-  byId("impression-title").textContent = dominantTide && tideMeta[dominantTide]
+  byId("impression-title").textContent = noteSignals[0]?.title || (dominantTide && tideMeta[dominantTide]
     ? `你的近期收藏里，「${tideMeta[dominantTide].label}」正在多一点。`
-    : (noteCount > 0 ? "你似乎愿意先把想法放下来，再慢慢看清。" : "第一次见面，先按你的节奏慢慢认识。")
-  byId("impression-summary").textContent = "只使用数量与主动收藏类型生成这段初印象，不读取便签正文，也不形成分数。"
+    : (noteCount > 0 ? "你似乎愿意先把想法放下来，再慢慢看清。" : "第一次见面，先按你的节奏慢慢认识。"))
+  byId("impression-summary").textContent = "这段初印象会参考你提交的闪念、表达方式与主动收藏，不是心理诊断，也会随着新内容继续变化。"
   const container = byId("impression-chips")
   container.replaceChildren()
   chips.slice(0, 3).forEach((copy) => {
@@ -1352,16 +1433,102 @@ function renderInitialImpression() {
   })
 }
 
+function resetQuickNoteComposer() {
+  cancelQuickNoteRecording()
+  byId("quick-note-input").value = ""
+  byId("quick-note-input").style.height = ""
+  byId("quick-note-count").textContent = `0 / ${QUICK_NOTE_MAX_LENGTH}`
+  byId("quick-note-status").textContent = "提交后自动保存，并用于更新初印象与个性化内容"
+  clearQuickNotePhoto()
+  clearQuickNoteVoice()
+  closeQuickNoteComposer()
+}
+
+function openQuickNoteComposer() {
+  const menu = byId("quick-note-attachment-menu")
+  const button = byId("quick-note-add-attachment")
+  menu.hidden = false
+  button.setAttribute("aria-expanded", "true")
+  button.classList.add("is-open")
+}
+
+function closeQuickNoteComposer() {
+  byId("quick-note-attachment-menu").hidden = true
+  byId("quick-note-add-attachment").setAttribute("aria-expanded", "false")
+  byId("quick-note-add-attachment").classList.remove("is-open")
+}
+
+function toggleQuickNoteComposer() {
+  if (byId("quick-note-attachment-menu").hidden) openQuickNoteComposer()
+  else closeQuickNoteComposer()
+}
+
+function syncQuickNoteComposerPreview() {
+  byId("quick-note-composer-preview").hidden = !pendingQuickNoteImage && pendingQuickNoteVoiceDuration === 0 && !quickNoteVoiceStartedAt
+}
+
 function updateQuickNoteSaveState() {
   const hasText = byId("quick-note-input").value.trim().length > 0
-  byId("save-quick-note").disabled = !hasText && !pendingQuickNoteImage
+  byId("save-quick-note").disabled = !hasText && !pendingQuickNoteImage && pendingQuickNoteVoiceDuration === 0
+  syncQuickNoteComposerPreview()
 }
 
 function clearQuickNotePhoto() {
   pendingQuickNoteImage = ""
   byId("quick-note-photo-input").value = ""
+  byId("quick-note-camera-input").value = ""
   byId("quick-note-photo-image").removeAttribute("src")
   byId("quick-note-photo-preview").hidden = true
+  updateQuickNoteSaveState()
+}
+
+function formatVoiceDuration(totalSeconds) {
+  const seconds = Math.max(0, Math.floor(totalSeconds))
+  return `${Math.floor(seconds / 60)}:${String(seconds % 60).padStart(2, "0")}`
+}
+
+function cancelQuickNoteRecording() {
+  if (quickNoteRecordingTimer) window.clearInterval(quickNoteRecordingTimer)
+  quickNoteRecordingTimer = null
+  quickNoteVoiceStartedAt = 0
+  byId("quick-note-voice").classList.remove("is-recording")
+  byId("quick-note-voice").setAttribute("aria-pressed", "false")
+  byId("quick-note-voice").setAttribute("aria-label", "开始录制语音闪念")
+}
+
+function clearQuickNoteVoice() {
+  cancelQuickNoteRecording()
+  pendingQuickNoteVoiceDuration = 0
+  byId("quick-note-voice-preview").hidden = true
+  byId("quick-note-voice-duration").textContent = "0:01"
+  updateQuickNoteSaveState()
+}
+
+function toggleQuickNoteVoiceRecording() {
+  if (!quickNoteVoiceStartedAt) {
+    pendingQuickNoteVoiceDuration = 0
+    quickNoteVoiceStartedAt = Date.now()
+    byId("quick-note-voice-preview").hidden = false
+    byId("quick-note-voice-preview").querySelector("strong").textContent = "正在录音"
+    byId("quick-note-voice").classList.add("is-recording")
+    byId("quick-note-voice").setAttribute("aria-pressed", "true")
+    byId("quick-note-voice").setAttribute("aria-label", "结束语音录制")
+    byId("quick-note-status").textContent = "再次点击麦克风结束；还可以同时添加文字或图片"
+    const updateDuration = () => {
+      const elapsed = Math.max(1, Math.floor((Date.now() - quickNoteVoiceStartedAt) / 1000))
+      byId("quick-note-voice-duration").textContent = formatVoiceDuration(elapsed)
+    }
+    updateDuration()
+    quickNoteRecordingTimer = window.setInterval(updateDuration, 500)
+    syncQuickNoteComposerPreview()
+    return
+  }
+
+  pendingQuickNoteVoiceDuration = Math.min(300, Math.max(1, Math.round((Date.now() - quickNoteVoiceStartedAt) / 1000)))
+  cancelQuickNoteRecording()
+  byId("quick-note-voice-preview").querySelector("strong").textContent = "语音闪念"
+  byId("quick-note-voice-duration").textContent = formatVoiceDuration(pendingQuickNoteVoiceDuration)
+  byId("quick-note-status").textContent = "语音已加入，仍可以补充文字或图片"
   updateQuickNoteSaveState()
 }
 
@@ -1405,12 +1572,13 @@ async function compressQuickNotePhoto(file) {
 }
 
 async function handleQuickNotePhoto(file) {
-  byId("quick-note-status").textContent = "正在准备图片预览……"
+  closeQuickNoteComposer()
+  byId("quick-note-status").textContent = "正在准备图片……"
   try {
     pendingQuickNoteImage = await compressQuickNotePhoto(file)
     byId("quick-note-photo-image").src = pendingQuickNoteImage
     byId("quick-note-photo-preview").hidden = false
-    byId("quick-note-status").textContent = "图片已经放进便签，点击保存后才会留在本机"
+    byId("quick-note-status").textContent = "图片已加入，仍可以补充文字或语音"
   } catch (error) {
     clearQuickNotePhoto()
     byId("quick-note-status").textContent = error instanceof Error ? error.message : "暂时无法添加图片"
@@ -1423,44 +1591,28 @@ function isValidQuickNoteRecord(record) {
     record &&
     typeof record.id === "string" &&
     typeof record.text === "string" &&
-    (record.text.trim().length > 0 || (typeof record.imageData === "string" && record.imageData.startsWith("data:image/"))) &&
+    (record.text.trim().length > 0 || (typeof record.imageData === "string" && record.imageData.startsWith("data:image/")) || record.voiceDuration > 0) &&
     record.text.length <= QUICK_NOTE_MAX_LENGTH &&
     (record.imageData === undefined || (
       typeof record.imageData === "string" &&
       record.imageData.length <= QUICK_NOTE_IMAGE_MAX_DATA_LENGTH &&
       (record.imageData === "" || record.imageData.startsWith("data:image/"))
     )) &&
-    Number.isFinite(record.createdAt)
+    Number.isFinite(record.createdAt) &&
+    (record.voiceDuration === undefined || (Number.isFinite(record.voiceDuration) && record.voiceDuration >= 0 && record.voiceDuration <= 300))
   )
 }
 
 function readQuickNotes() {
-  try {
-    const raw = window.localStorage.getItem(QUICK_NOTE_STORAGE_KEY)
-    if (!raw) return []
-    const parsed = JSON.parse(raw)
-    if (!Array.isArray(parsed)) return []
-    const seen = new Set()
-    return parsed
-      .filter((record) => {
-        if (!isValidQuickNoteRecord(record) || seen.has(record.id)) return false
-        seen.add(record.id)
-        return true
-      })
-      .sort((a, b) => b.createdAt - a.createdAt)
-      .slice(0, QUICK_NOTE_LIMIT)
-  } catch (_error) {
-    return []
-  }
+  return quickNoteRecords
+    .filter(isValidQuickNoteRecord)
+    .sort((a, b) => b.createdAt - a.createdAt)
+    .slice(0, QUICK_NOTE_LIMIT)
 }
 
 function writeQuickNotes(records) {
-  try {
-    window.localStorage.setItem(QUICK_NOTE_STORAGE_KEY, JSON.stringify(records.slice(0, QUICK_NOTE_LIMIT)))
-    return true
-  } catch (_error) {
-    return false
-  }
+  quickNoteRecords = records.filter(isValidQuickNoteRecord).slice(0, QUICK_NOTE_LIMIT)
+  return true
 }
 
 function formatQuickNoteDate(timestamp) {
@@ -1472,17 +1624,19 @@ function formatQuickNoteDate(timestamp) {
   }).format(new Date(timestamp))
 }
 
-function saveQuickNote(text, imageData = "") {
+function saveQuickNote(text, imageData = "", voiceDuration = 0) {
   const normalized = text.trim()
-  if (!normalized && !imageData) return false
+  if (!normalized && !imageData && !voiceDuration) return false
   const now = Date.now()
   const randomPart = Math.random().toString(36).slice(2, 9)
   const record = {
     id: `note-${now}-${randomPart}`,
     text: normalized.slice(0, QUICK_NOTE_MAX_LENGTH),
     imageData,
+    voiceDuration,
     createdAt: now
   }
+  quickNoteDeckOffset = 0
   return writeQuickNotes([record, ...readQuickNotes()])
 }
 
@@ -1491,8 +1645,10 @@ function removeQuickNote(id) {
   const next = records.filter((record) => record.id !== id)
   if (next.length === records.length) return
   if (writeQuickNotes(next)) {
-    byId("quick-note-status").textContent = "已删除这张便签"
+    quickNoteDeckOffset = next.length > 0 ? quickNoteDeckOffset % next.length : 0
+    byId("quick-note-library-status").textContent = "已移除这条闪念，初印象也会随之更新"
     renderQuickNotes()
+    renderInitialImpression()
     updateSettingsStorageState()
   }
 }
@@ -1517,34 +1673,88 @@ function renderQuickNotes() {
   const records = readQuickNotes()
   const list = byId("quick-note-list")
   list.replaceChildren()
+  quickNoteDeckOffset = records.length > 0 ? quickNoteDeckOffset % records.length : 0
+  const orderedRecords = records.length > 0
+    ? records.slice(quickNoteDeckOffset).concat(records.slice(0, quickNoteDeckOffset))
+    : []
+  const visibleRecords = orderedRecords.slice(0, 4)
+  const frontRecord = visibleRecords[0]
+  list.hidden = records.length === 0
+  list.classList.toggle("has-photo-front", Boolean(frontRecord?.imageData))
+  list.classList.toggle("has-voice-front", Boolean(frontRecord?.voiceDuration))
 
-  records.forEach((record) => {
+  visibleRecords.forEach((record, index) => {
     const article = document.createElement("article")
     article.className = "quick-note-card"
+    article.classList.add(record.imageData ? "is-photo" : "is-text")
+    if (record.voiceDuration > 0) article.classList.add("has-voice")
+    if (index > 0) article.classList.add("is-behind")
+    article.dataset.stackPosition = String(index)
+    article.style.setProperty("--note-tilt", index === 0 ? "-0.35deg" : "0deg")
+    article.style.setProperty("--stack-index", String(5 - index))
+
+    if (index > 0) {
+      const revealCard = () => {
+        quickNoteDeckOffset = records.findIndex((item) => item.id === record.id)
+        renderQuickNotes()
+      }
+      article.tabIndex = 0
+      article.setAttribute("role", "button")
+      article.setAttribute("aria-label", `把第 ${index + 1} 张闪念移到最上层`)
+      article.addEventListener("click", (event) => {
+        if (!event.target.closest("button")) revealCard()
+      })
+      article.addEventListener("keydown", (event) => {
+        if (event.key !== "Enter" && event.key !== " ") return
+        event.preventDefault()
+        revealCard()
+      })
+    }
+
+    const visual = document.createElement("div")
+    visual.className = "quick-note-card-visual"
+    if (record.imageData) {
+      const image = document.createElement("img")
+      image.src = record.imageData
+      image.alt = record.text.trim() ? `闪念随手拍：${record.text}` : "闪念随手拍"
+      image.loading = "lazy"
+      visual.append(image)
+    }
+
+    const sheet = document.createElement("div")
+    sheet.className = "quick-note-card-sheet"
 
     const meta = document.createElement("div")
     meta.className = "quick-note-card-meta"
     const label = document.createElement("span")
-    label.textContent = "闪念便签"
+    const modalities = []
+    if (record.text.trim()) modalities.push("文字")
+    if (record.imageData) modalities.push("图片")
+    if (record.voiceDuration > 0) modalities.push("语音")
+    label.textContent = `${modalities.join(" · ")}闪念`
     const time = document.createElement("time")
     time.dateTime = new Date(record.createdAt).toISOString()
     time.textContent = formatQuickNoteDate(record.createdAt)
     meta.append(label, time)
 
-    const body = document.createElement("div")
-    body.className = "quick-note-card-body"
-    if (record.imageData) {
-      const image = document.createElement("img")
-      image.src = record.imageData
-      image.alt = "闪念随手拍"
-      image.loading = "lazy"
-      body.append(image)
+    const content = document.createElement("blockquote")
+    content.textContent = record.text.trim() || (record.voiceDuration > 0 ? "一段还没有转成文字的声音。" : "一张还没有解释的瞬间。")
+    sheet.append(meta, content)
+    if (record.voiceDuration > 0) {
+      const voice = document.createElement("div")
+      voice.className = "quick-note-card-voice"
+      const play = document.createElement("span")
+      play.textContent = "▶"
+      play.setAttribute("aria-hidden", "true")
+      const waveform = document.createElement("i")
+      waveform.setAttribute("aria-hidden", "true")
+      for (let barIndex = 0; barIndex < 11; barIndex += 1) waveform.append(document.createElement("b"))
+      const duration = document.createElement("small")
+      duration.textContent = formatVoiceDuration(record.voiceDuration)
+      voice.append(play, waveform, duration)
+      sheet.append(voice)
     }
-    if (record.text.trim()) {
-      const content = document.createElement("blockquote")
-      content.textContent = record.text
-      body.append(content)
-    }
+    visual.append(sheet)
 
     const actions = document.createElement("div")
     actions.className = "quick-note-card-actions"
@@ -1552,7 +1762,7 @@ function renderQuickNotes() {
     useButton.className = "quick-note-use"
     useButton.type = "button"
     useButton.textContent = "用它开始梳理"
-    useButton.addEventListener("click", () => startFlow(record.text || "我想从这张照片开始梳理"))
+    useButton.addEventListener("click", () => startFlow(record.text || (record.voiceDuration > 0 ? "我想从这段语音开始梳理" : "我想从这张照片开始梳理")))
     const removeButton = document.createElement("button")
     removeButton.className = "quick-note-delete"
     removeButton.type = "button"
@@ -1561,42 +1771,23 @@ function renderQuickNotes() {
     removeButton.addEventListener("click", () => requestRemoveQuickNote(record.id, removeButton))
     actions.append(useButton, removeButton)
 
-    article.append(meta, body, actions)
+    article.append(visual, actions)
     list.append(article)
   })
 
-  byId("quick-note-total").textContent = `${records.length} 张`
-  byId("quick-note-empty").hidden = records.length > 0
+  byId("quick-note-total").textContent = `${records.length} 条`
+  byId("quick-note-stack-empty").hidden = records.length > 0
+  byId("quick-note-deck-nav").hidden = records.length <= 1
+  byId("quick-note-deck-position").textContent = records.length > 0
+    ? `${quickNoteDeckOffset + 1} / ${records.length}`
+    : "0 / 0"
 }
 
-function clearAllQuickNotes(event) {
+function stepQuickNoteDeck(direction) {
   const records = readQuickNotes()
-  if (records.length === 0) {
-    renderQuickNotes()
-    updateSettingsStorageState()
-    return
-  }
-
-  const button = event && event.currentTarget instanceof HTMLButtonElement
-    ? event.currentTarget
-    : null
-  if (button && button.dataset.confirming !== "true") {
-    const original = button.textContent
-    button.dataset.confirming = "true"
-    button.textContent = "再次点击，确认清空闪念"
-    schedule(() => {
-      if (!button.isConnected) return
-      button.dataset.confirming = "false"
-      button.textContent = original
-    }, 4000)
-    return
-  }
-
-  if (writeQuickNotes([])) {
-    byId("quick-note-status").textContent = "已清空留在本机的闪念"
-    renderQuickNotes()
-    updateSettingsStorageState()
-  }
+  if (records.length <= 1) return
+  quickNoteDeckOffset = (quickNoteDeckOffset + direction + records.length) % records.length
+  renderQuickNotes()
 }
 
 function makeEchoRecord(text, days) {
@@ -1948,13 +2139,6 @@ function updateDueEchoCard() {
 }
 
 function updateSettingsStorageState() {
-  const quickNoteButton = byId("settings-clear-quick-notes")
-  const quickNoteCount = readQuickNotes().length
-  quickNoteButton.disabled = quickNoteCount === 0
-  quickNoteButton.textContent = quickNoteCount === 0
-    ? "没有已保存的闪念"
-    : `清空已保存闪念（${quickNoteCount}）`
-
   const button = byId("settings-clear-echoes")
   const count = readEchoes().length
   button.disabled = count === 0
@@ -2045,7 +2229,9 @@ function trapModalFocus(event) {
       ? onboardingModal
       : (!cardDetailModal.hidden ? cardDetailModal : (!tideModal.hidden ? tideModal : null)))
   if (!activeModal) return
-  const focusable = Array.from(activeModal.querySelectorAll("button:not([disabled])"))
+  const focusable = Array.from(activeModal.querySelectorAll(
+    "button:not([disabled]), textarea:not([disabled]), input:not([disabled]):not([type='hidden']), a[href]"
+  ))
   if (focusable.length === 0) return
   const first = focusable[0]
   const last = focusable[focusable.length - 1]
@@ -2079,6 +2265,16 @@ byId("draw-answer").addEventListener("click", drawAnswerBookCard)
 byId("open-daily-report").addEventListener("click", () => showScreen("report-screen"))
 byId("report-back").addEventListener("click", () => showScreen("today-screen"))
 byId("report-start-chat").addEventListener("click", () => openStandaloneChat({ fromReport: true }))
+backgroundMusicToggle.addEventListener("click", toggleBackgroundMusic)
+backgroundMusic.addEventListener("play", syncBackgroundMusicButton)
+backgroundMusic.addEventListener("pause", syncBackgroundMusicButton)
+backgroundMusic.addEventListener("error", () => {
+  backgroundMusicToggle.disabled = true
+  backgroundMusicToggle.classList.remove("is-playing")
+  backgroundMusicToggle.setAttribute("aria-pressed", "false")
+  backgroundMusicToggle.setAttribute("aria-label", "雨声背景音乐暂时无法播放")
+  byId("background-music-status").textContent = "不可用"
+})
 document.querySelectorAll("[data-report-feedback]").forEach((button) => {
   button.addEventListener("click", () => {
     document.querySelectorAll("[data-report-feedback]").forEach((item) => {
@@ -2090,35 +2286,46 @@ document.querySelectorAll("[data-report-feedback]").forEach((button) => {
   })
 })
 
+byId("quick-note-add-attachment").addEventListener("click", toggleQuickNoteComposer)
+byId("quick-note-deck-previous").addEventListener("click", () => stepQuickNoteDeck(-1))
+byId("quick-note-deck-next").addEventListener("click", () => stepQuickNoteDeck(1))
+
 byId("quick-note-input").addEventListener("input", (event) => {
   const length = event.currentTarget.value.length
+  event.currentTarget.style.height = "auto"
+  event.currentTarget.style.height = `${Math.min(event.currentTarget.scrollHeight, 96)}px`
   byId("quick-note-count").textContent = `${length} / ${QUICK_NOTE_MAX_LENGTH}`
   updateQuickNoteSaveState()
-  byId("quick-note-status").textContent = "不会自动进入日报、画像或聊天"
+  if (!quickNoteVoiceStartedAt) byId("quick-note-status").textContent = "提交后自动保存，并用于更新初印象与个性化内容"
 })
-byId("quick-note-photo-input").addEventListener("change", (event) => {
-  const file = event.currentTarget.files && event.currentTarget.files[0]
-  if (file) handleQuickNotePhoto(file)
+;[byId("quick-note-photo-input"), byId("quick-note-camera-input")].forEach((input) => {
+  input.addEventListener("change", (event) => {
+    const file = event.currentTarget.files && event.currentTarget.files[0]
+    if (file) handleQuickNotePhoto(file)
+  })
 })
 byId("remove-quick-note-photo").addEventListener("click", () => {
   clearQuickNotePhoto()
-  byId("quick-note-status").textContent = "图片已移除；可以只保存文字，也可以重新选择"
+  byId("quick-note-status").textContent = "图片已移除，仍可以留下文字或语音"
+})
+byId("quick-note-voice").addEventListener("click", toggleQuickNoteVoiceRecording)
+byId("remove-quick-note-voice").addEventListener("click", () => {
+  clearQuickNoteVoice()
+  byId("quick-note-status").textContent = "语音已移除，仍可以留下文字或图片"
 })
 byId("quick-note-form").addEventListener("submit", (event) => {
   event.preventDefault()
+  if (quickNoteVoiceStartedAt) toggleQuickNoteVoiceRecording()
   const input = byId("quick-note-input")
-  if (!input.value.trim() && !pendingQuickNoteImage) return
-  if (!saveQuickNote(input.value, pendingQuickNoteImage)) {
-    byId("quick-note-status").textContent = "这台浏览器暂时无法保存，请检查本地存储权限"
+  if (!input.value.trim() && !pendingQuickNoteImage && pendingQuickNoteVoiceDuration === 0) return
+  if (!saveQuickNote(input.value, pendingQuickNoteImage, pendingQuickNoteVoiceDuration)) {
+    byId("quick-note-status").textContent = "暂时无法提交，请稍后再试"
     return
   }
-  input.value = ""
-  clearQuickNotePhoto()
-  byId("quick-note-count").textContent = `0 / ${QUICK_NOTE_MAX_LENGTH}`
-  byId("quick-note-status").textContent = "已经收好；只有你主动选择时，它才会进入章节"
+  byId("quick-note-library-status").textContent = "已提交并收进闪念，初印象已随之更新"
   renderQuickNotes()
   updateSettingsStorageState()
-  input.focus({ preventScroll: true })
+  resetQuickNoteComposer()
 })
 
 byId("notes-back").addEventListener("click", () => showScreen("today-screen"))
@@ -2305,7 +2512,6 @@ byId("echo-back").addEventListener("click", showActionScreen)
 byId("finish-flow").addEventListener("click", finishFlow)
 
 byId("clear-echoes").addEventListener("click", clearAllEchoes)
-byId("settings-clear-quick-notes").addEventListener("click", clearAllQuickNotes)
 byId("settings-clear-echoes").addEventListener("click", clearAllEchoes)
 byId("settings-clear-tide-cards").addEventListener("click", clearAllTideCards)
 
@@ -2335,7 +2541,22 @@ byId("voice-call-toggle").addEventListener("click", (event) => {
 voiceModal.addEventListener("click", (event) => {
   if (event.target === voiceModal) closeVoiceMode()
 })
+document.addEventListener("click", (event) => {
+  const attachmentControl = document.querySelector(".quick-note-attachment-control")
+  if (attachmentControl && !attachmentControl.contains(event.target)) closeQuickNoteComposer()
+})
 document.addEventListener("keydown", (event) => {
+  if (!byId("quick-note-attachment-menu").hidden && event.key === "Escape") {
+    event.preventDefault()
+    closeQuickNoteComposer()
+    return
+  }
+  if (quickNoteVoiceStartedAt && event.key === "Escape") {
+    event.preventDefault()
+    clearQuickNoteVoice()
+    byId("quick-note-status").textContent = "已取消这次语音录制"
+    return
+  }
   if (!voiceModal.hidden && event.key === "Escape") {
     event.preventDefault()
     closeVoiceMode()
