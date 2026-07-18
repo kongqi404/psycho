@@ -19,7 +19,7 @@
               <span aria-hidden="true">◐</span>
               <strong>心潮</strong>
             </a>
-            <button class="icon-button" type="button" data-open-safety aria-label="查看体验边界">i</button>
+            <button class="icon-button tutorial-trigger" id="open-onboarding" type="button" aria-label="查看新手说明">?</button>
           </header>
 
           <div class="home-welcome">
@@ -38,23 +38,26 @@
           </article>
 
           <div class="home-entry-grid">
-            <button class="home-entry note-entry" id="open-quick-notes" type="button">
-              <span class="home-entry-icon" aria-hidden="true">＋</span>
-              <span><strong>随手记下一个闪念</strong><small>零碎想法 · 只留在本机</small></span>
-              <i aria-hidden="true">→</i>
-            </button>
             <button class="home-entry primary-entry" id="start-flow" type="button">
               <span class="home-entry-icon" aria-hidden="true">◐</span>
               <span><strong>走一段今日章节</strong><small>闪念 · 选择 · 潮笺</small></span>
               <i aria-hidden="true">→</i>
             </button>
-            <button class="home-entry chat-entry" id="open-chat" type="button">
-              <span class="home-entry-icon" aria-hidden="true">◌</span>
-              <span><strong>和潮伴聊一会儿</strong><small>想说多少都可以</small></span>
+            <button class="home-entry echo-entry" type="button" data-nav-target="echoes-screen">
+              <span class="home-entry-icon" aria-hidden="true">⌁</span>
+              <span><strong>打开未来回响</strong><small>看看已经回来，或仍在封存的话</small></span>
               <i aria-hidden="true">→</i>
             </button>
           </div>
-          <p class="privacy-line"><span aria-hidden="true">⌁</span> 当前原型不上传或保存聊天 · 随时可以停下</p>
+
+          <section class="answer-book" aria-labelledby="answer-book-title">
+            <div class="answer-book-topline"><span>DAILY CARD</span><small id="answer-book-date">今天</small></div>
+            <h2 id="answer-book-title">答案之书</h2>
+            <p id="answer-book-prompt">在心里想一个问题，然后抽取今天唯一的一张卡。</p>
+            <blockquote id="answer-book-result" hidden></blockquote>
+            <button id="draw-answer" type="button"><span>抽取今日答案</span><span aria-hidden="true">✦</span></button>
+            <small class="answer-book-status" id="answer-book-status" role="status">每天一次，不记录你想的问题</small>
+          </section>
 
           <aside class="due-echo-card" id="due-echo-card" hidden>
             <span class="tiny-orb" aria-hidden="true"></span>
@@ -69,7 +72,7 @@
           <header class="flow-header report-header">
             <button class="back-button" id="report-back" type="button" aria-label="返回今天">←</button>
             <span class="prototype-pill">今日潮汐</span>
-            <button class="icon-button" type="button" data-open-safety aria-label="查看体验边界">i</button>
+            <span class="header-spacer" aria-hidden="true"></span>
           </header>
 
           <div class="report-hero">
@@ -88,7 +91,6 @@
           <section class="report-transparency">
             <div class="report-section-heading"><span>02</span><div><p>WHY THIS REPORT</p><h2>这份日报从哪里来</h2></div></div>
             <p id="report-source-copy"></p>
-            <p class="report-boundary">它提供生活节奏建议，不是测评、诊断或对你的固定定义。</p>
           </section>
 
           <section class="report-feedback" aria-labelledby="report-feedback-title">
@@ -107,7 +109,7 @@
           <header class="flow-header">
             <button class="back-button" id="notes-back" type="button" aria-label="返回今天">←</button>
             <div class="step-indicator"><span>01</span><i style="--progress: 16%"></i><small>06</small></div>
-            <button class="icon-button" type="button" data-open-safety aria-label="查看体验边界">i</button>
+            <span class="header-spacer" aria-hidden="true"></span>
           </header>
 
           <div class="screen-heading">
@@ -141,7 +143,7 @@
           <header class="flow-header">
             <button class="back-button" id="theme-back" type="button" aria-label="返回闪念便贴">←</button>
             <div class="step-indicator"><span>02</span><i style="--progress: 32%"></i><small>06</small></div>
-            <button class="icon-button" type="button" data-open-safety aria-label="查看体验边界">i</button>
+            <span class="header-spacer" aria-hidden="true"></span>
           </header>
 
           <div class="screen-heading compact-heading">
@@ -174,7 +176,7 @@
           <header class="flow-header">
             <button class="back-button" id="overview-back" type="button" aria-label="返回主题确认">←</button>
             <span class="prototype-pill">今日章节</span>
-            <button class="icon-button" type="button" data-open-safety aria-label="查看体验边界">i</button>
+            <span class="header-spacer" aria-hidden="true"></span>
           </header>
 
           <div class="overview-hero">
@@ -216,7 +218,7 @@
           <header class="flow-header game-header">
             <button class="back-button dark-button" id="game-back" type="button" aria-label="暂时离开章节">←</button>
             <div class="game-progress"><span id="card-count">1 / 6</span><i><b id="card-progress"></b></i></div>
-            <button class="icon-button dark-button" type="button" data-open-safety aria-label="查看体验边界">i</button>
+            <span class="header-spacer" aria-hidden="true"></span>
           </header>
 
           <div class="game-context">
@@ -276,15 +278,15 @@
           <header class="flow-header">
             <button class="back-button" id="chat-back" type="button" aria-label="返回上一页">←</button>
             <span class="prototype-pill">情绪陪伴 · 演示</span>
-            <button class="icon-button" type="button" data-open-safety aria-label="查看体验边界">i</button>
+            <button class="icon-button voice-mode-trigger" id="open-voice-mode" type="button" aria-label="打开语音对话演示">
+              <svg class="mic-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3a3 3 0 0 0-3 3v6a3 3 0 0 0 6 0V6a3 3 0 0 0-3-3Z"></path><path d="M5.5 11.5a6.5 6.5 0 0 0 13 0M12 18v3M9 21h6"></path></svg>
+            </button>
           </header>
 
           <div class="chat-heading">
             <div class="companion-avatar" aria-hidden="true">潮</div>
             <div><p class="eyebrow" id="chat-kicker">第二章 · 对话</p><h1 id="chat-title" tabindex="-1">和潮伴聊一会儿</h1><p id="chat-subtitle">你可以纠正我、跳过问题，或随时结束。</p></div>
           </div>
-
-          <aside class="chat-boundary"><span aria-hidden="true">i</span><p>潮伴可以陪你梳理感受，但不能诊断、治疗或替代专业帮助。当前是本地演示回复。</p></aside>
 
           <div class="chat-log" id="chat-log" role="log" aria-live="polite" aria-label="与潮伴的对话"></div>
 
@@ -294,21 +296,17 @@
             <button type="button" data-chat-prompt="我现在有点累，不知道从哪里开始。">我现在有点累</button>
           </div>
 
-          <aside class="chat-crisis-panel" id="chat-crisis-panel" role="alert" hidden>
-            <h2>先把安全放在这里</h2>
-            <p>如果你或他人正处于即时危险，请立刻联系所在地紧急服务、危机支持资源，或一位能马上来到身边的可信任对象。</p>
-            <button class="secondary-button" type="button" data-open-safety>查看完整支持说明</button>
-          </aside>
-
           <form class="chat-composer" id="chat-form">
             <label class="sr-only" for="chat-input">想对潮伴说的话</label>
+            <button class="voice-input-button" id="voice-input" type="button" aria-label="开始语音输入演示" aria-pressed="false">
+              <svg class="mic-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3a3 3 0 0 0-3 3v6a3 3 0 0 0 6 0V6a3 3 0 0 0-3-3Z"></path><path d="M5.5 11.5a6.5 6.5 0 0 0 13 0M12 18v3M9 21h6"></path></svg>
+            </button>
             <textarea id="chat-input" rows="1" maxlength="400" placeholder="此刻最想说的是……"></textarea>
             <button id="send-chat" type="submit" aria-label="发送消息" disabled>↑</button>
           </form>
           <p class="chat-status" id="chat-status" role="status">聊天内容只在本次页面内存中使用</p>
 
           <div class="chat-exits">
-            <button class="text-button quiet" id="chat-crisis-help" type="button">我现在需要紧急帮助</button>
             <button class="primary-button" id="end-chat" type="button"><span>聊到这里，继续</span><span aria-hidden="true">→</span></button>
           </div>
         </section>
@@ -317,7 +315,7 @@
           <header class="flow-header">
             <button class="back-button" id="action-back" type="button" aria-label="返回陪伴对话">←</button>
             <span class="prototype-pill">第三章 · 一小步</span>
-            <button class="icon-button" type="button" data-open-safety aria-label="查看体验边界">i</button>
+            <span class="header-spacer" aria-hidden="true"></span>
           </header>
 
           <div class="screen-heading compact-heading">
@@ -344,7 +342,7 @@
           <header class="flow-header">
             <button class="back-button" id="echo-back" type="button" aria-label="返回微行动">←</button>
             <span class="prototype-pill">留给未来</span>
-            <button class="icon-button" type="button" data-open-safety aria-label="查看体验边界">i</button>
+            <span class="header-spacer" aria-hidden="true"></span>
           </header>
 
           <div class="screen-heading compact-heading">
@@ -386,7 +384,7 @@
         <section class="screen complete-screen" id="complete-screen" aria-labelledby="complete-title" hidden>
           <header class="app-header">
             <a class="brand-mark light-brand" href="#today" data-nav-target="today-screen" aria-label="返回今天"><span aria-hidden="true">◐</span><strong>心潮</strong></a>
-            <button class="icon-button dark-button" type="button" data-open-safety aria-label="查看体验边界">i</button>
+            <span class="header-spacer" aria-hidden="true"></span>
           </header>
 
           <div class="completion-orbit" aria-hidden="true"><i></i><i></i><i></i><b>◐</b></div>
@@ -416,7 +414,7 @@
         <section class="screen library-screen thoughts-screen" id="thoughts-screen" aria-labelledby="thoughts-title" hidden>
           <header class="app-header">
             <a class="brand-mark" href="#today" data-nav-target="today-screen" aria-label="返回今天"><span aria-hidden="true">◐</span><strong>心潮</strong></a>
-            <button class="icon-button" type="button" data-open-safety aria-label="查看体验边界">i</button>
+            <span class="header-spacer" aria-hidden="true"></span>
           </header>
 
           <div class="screen-heading library-heading thoughts-heading">
@@ -428,6 +426,18 @@
           <form class="quick-note-composer" id="quick-note-form">
             <label for="quick-note-input">此刻想记下什么？</label>
             <textarea id="quick-note-input" maxlength="200" rows="4" placeholder="一句话、一个画面，或还说不清的感受……"></textarea>
+            <div class="quick-note-media-actions">
+              <label class="quick-note-photo-button" for="quick-note-photo-input">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7.5h3l1.3-2h7.4l1.3 2h3v11H4z"></path><circle cx="12" cy="13" r="3.2"></circle></svg>
+                <span>随手拍 / 添加图片</span>
+              </label>
+              <input class="sr-only" id="quick-note-photo-input" type="file" accept="image/*" capture="environment" />
+              <small>图片会压缩成预览图，和便签一起留在本机</small>
+            </div>
+            <div class="quick-note-photo-preview" id="quick-note-photo-preview" hidden>
+              <img id="quick-note-photo-image" alt="待保存的随手拍预览" />
+              <button id="remove-quick-note-photo" type="button">移除图片</button>
+            </div>
             <div class="quick-note-meta">
               <span id="quick-note-count">0 / 200</span>
               <span>明确保存后才会留在本机</span>
@@ -455,7 +465,7 @@
         <section class="screen library-screen card-slot-screen" id="cards-screen" aria-labelledby="cards-title" hidden>
           <header class="app-header">
             <a class="brand-mark" href="#today" data-nav-target="today-screen" aria-label="返回今天"><span aria-hidden="true">◐</span><strong>心潮</strong></a>
-            <button class="icon-button" type="button" data-open-safety aria-label="查看体验边界">i</button>
+            <span class="header-spacer" aria-hidden="true"></span>
           </header>
           <div class="screen-heading library-heading">
             <p class="eyebrow">MY TIDE CARDS</p>
@@ -480,7 +490,7 @@
         <section class="screen library-screen" id="echoes-screen" aria-labelledby="echoes-title" hidden>
           <header class="app-header">
             <a class="brand-mark" href="#today" data-nav-target="today-screen" aria-label="返回今天"><span aria-hidden="true">◐</span><strong>心潮</strong></a>
-            <button class="icon-button" type="button" data-open-safety aria-label="查看体验边界">i</button>
+            <span class="header-spacer" aria-hidden="true"></span>
           </header>
           <div class="screen-heading library-heading">
             <p class="eyebrow">MY ECHOES</p>
@@ -500,58 +510,82 @@
         <section class="screen settings-screen" id="settings-screen" aria-labelledby="settings-title" hidden>
           <header class="app-header">
             <a class="brand-mark" href="#today" data-nav-target="today-screen" aria-label="返回今天"><span aria-hidden="true">◐</span><strong>心潮</strong></a>
-            <button class="icon-button" type="button" data-open-safety aria-label="查看体验边界">i</button>
+            <button class="icon-button tutorial-trigger" id="reopen-onboarding" type="button" aria-label="重新查看新手说明">?</button>
           </header>
           <div class="screen-heading library-heading">
             <p class="eyebrow">YOUR SPACE</p>
             <h1 id="settings-title" tabindex="-1">我的</h1>
             <p>你决定留下什么，也可以随时把它带走。</p>
           </div>
+          <section class="settings-card impression-card">
+            <div class="impression-meta"><span>初印象</span><small>轻量画像 · 可随时修正</small></div>
+            <h2 id="impression-title">你似乎愿意先看清一点，再决定下一步。</h2>
+            <p id="impression-summary">这是根据你主动留下的内容形成的温和提示，不是分数，也不是固定标签。</p>
+            <div class="impression-chips" id="impression-chips" aria-label="初印象关键词"></div>
+          </section>
           <section class="settings-card">
-            <h2>本地与隐私</h2>
+            <h2>我的收藏</h2>
+            <div class="my-space-links">
+              <button type="button" data-nav-target="cards-screen"><span aria-hidden="true">▱</span><div><strong>潮笺卡槽</strong><small id="my-card-slot-count">看看满潮时收下的短句</small></div><i aria-hidden="true">→</i></button>
+              <button type="button" data-nav-target="echoes-screen"><span aria-hidden="true">⌁</span><div><strong>未来回响</strong><small id="my-echo-count">看看留给未来的话</small></div><i aria-hidden="true">→</i></button>
+            </div>
+          </section>
+          <section class="settings-card">
+            <h2>留在这台设备上的内容</h2>
             <dl>
-              <div><dt>随手闪念</dt><dd>只有点击「收好这张便签」后才保存在本机；不会自动用于日报、画像或聊天</dd></div>
-              <div><dt>章节闪念</dt><dd>仅在本次页面中使用，不持久保存</dd></div>
-              <div><dt>章节选择</dt><dd>仅用于本次对话开场与建议，离开后清除</dd></div>
-              <div><dt>潮笺卡槽</dt><dd>点击「收进卡槽」后，只保存内置卡片编号与收藏时间</dd></div>
-              <div><dt>陪伴对话</dt><dd>当前原型仅在页面内存运行；正式接入前需明确服务端保存期限</dd></div>
-              <div><dt>未来回响</dt><dd>只有主动勾选后保存在这台设备</dd></div>
+              <div><dt>随手闪念</dt><dd>文字与压缩预览图只有在你点击保存后才留在本机</dd></div>
+              <div><dt>潮笺与回响</dt><dd>只保留你主动收下的内容，可以在下方随时清空</dd></div>
+              <div><dt>对话与语音</dt><dd>当前均为前端演示，离开页面后结束</dd></div>
             </dl>
             <div class="settings-actions">
               <button class="secondary-button" id="settings-clear-quick-notes" type="button">没有已保存的闪念</button>
               <button class="secondary-button" id="settings-clear-tide-cards" type="button">卡槽目前为空</button>
               <button class="secondary-button" id="settings-clear-echoes" type="button">删除全部已保存回响</button>
             </div>
-            <button class="ghost-button full-width" type="button" data-nav-target="echoes-screen">打开未来回响</button>
           </section>
           <section class="settings-card">
-            <h2>体验边界</h2>
-            <p>心潮提供叙事选择与自我记录，不提供心理诊断、医疗建议或危机干预。</p>
-            <button class="ghost-button full-width" type="button" data-open-safety>查看完整说明</button>
+            <h2>第一次来，不知道从哪里开始？</h2>
+            <p>用 30 秒看懂“今天、闪念、对话和回响”各自适合什么时候使用。</p>
+            <button class="ghost-button full-width" id="open-tutorial-from-settings" type="button">再看一次新手说明</button>
           </section>
           <section class="settings-card subtle-card">
             <h2>原型版本</h2>
-            <p>V0.4 · 新增独立闪念便签、今日潮汐日报与情绪陪伴对话。当前演示不连接后端；正式版本需单独获得聊天与个性化数据授权。</p>
+            <p>V0.4 · 新增答案之书、图片便签、语音交互演示、初印象与新手引导。</p>
           </section>
         </section>
 
         <nav class="bottom-nav" id="bottom-nav" aria-label="主要导航">
           <button type="button" data-nav-target="today-screen" aria-current="page"><span aria-hidden="true">◐</span><strong>今天</strong></button>
           <button type="button" data-nav-target="thoughts-screen"><span aria-hidden="true">＋</span><strong>闪念</strong></button>
-          <button class="chat-nav-button" type="button" data-nav-target="chat-screen"><span aria-hidden="true">◌</span><strong>对话</strong></button>
-          <button type="button" data-nav-target="cards-screen"><span aria-hidden="true">▱</span><strong>卡槽</strong></button>
+          <button type="button" data-nav-target="chat-screen"><span aria-hidden="true"><svg class="mic-icon" viewBox="0 0 24 24"><path d="M12 3a3 3 0 0 0-3 3v6a3 3 0 0 0 6 0V6a3 3 0 0 0-3-3Z"></path><path d="M5.5 11.5a6.5 6.5 0 0 0 13 0M12 18v3M9 21h6"></path></svg></span><strong>对话</strong></button>
           <button type="button" data-nav-target="settings-screen"><span aria-hidden="true">○</span><strong>我的</strong></button>
         </nav>
 
-        <div class="modal-backdrop" id="safety-modal" hidden>
-          <section class="safety-modal" role="dialog" aria-modal="true" aria-labelledby="safety-title">
-            <button class="modal-close" id="close-safety" type="button" aria-label="关闭体验边界">×</button>
-            <span class="modal-icon" aria-hidden="true">◌</span>
-            <p class="eyebrow">BEFORE YOU CONTINUE</p>
-            <h2 id="safety-title">这里是自我梳理体验，<br />不是专业服务</h2>
-            <p>卡片、四股潮向、日报和陪伴对话用于帮助你换一个角度观察当下，不代表心理诊断、人格判断、健康水平或正确答案，也不能替代心理咨询与医疗支持。</p>
-            <p>如果你或他人正面临即时危险，请暂停体验，联系所在地紧急服务、危机支持资源，或一位能够立刻陪伴你的可信任对象。</p>
-            <button class="secondary-button" id="acknowledge-safety" type="button">我知道了</button>
+        <div class="modal-backdrop" id="onboarding-modal" hidden>
+          <section class="onboarding-modal" role="dialog" aria-modal="true" aria-labelledby="onboarding-title">
+            <button class="modal-close" id="close-onboarding" type="button" aria-label="关闭新手说明">×</button>
+            <p class="eyebrow">30 秒认识心潮</p>
+            <h2 id="onboarding-title">按此刻的需要，选一个入口就好。</h2>
+            <div class="tutorial-steps">
+              <article><span>◐</span><div><strong>今天</strong><p>看日报、抽答案卡，或进入一段完整章节。</p></div></article>
+              <article><span>＋</span><div><strong>闪念</strong><p>随手写一句、拍一张，不用立刻开始梳理。</p></div></article>
+              <article><span><svg class="mic-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3a3 3 0 0 0-3 3v6a3 3 0 0 0 6 0V6a3 3 0 0 0-3-3Z"></path><path d="M5.5 11.5a6.5 6.5 0 0 0 13 0M12 18v3M9 21h6"></path></svg></span><div><strong>对话</strong><p>文字、语音输入或语音陪伴，想说多少都可以。</p></div></article>
+              <article><span>⌁</span><div><strong>回响</strong><p>把一句话留给未来，再在某一天重新遇见。</p></div></article>
+            </div>
+            <button class="primary-button" id="finish-onboarding" type="button"><span>从今天开始</span><span aria-hidden="true">→</span></button>
+          </section>
+        </div>
+
+        <div class="modal-backdrop voice-modal-backdrop" id="voice-modal" hidden>
+          <section class="voice-modal" role="dialog" aria-modal="true" aria-labelledby="voice-modal-title">
+            <button class="modal-close" id="close-voice-mode" type="button" aria-label="关闭语音对话演示">×</button>
+            <p class="eyebrow">VOICE COMPANION · UI DEMO</p>
+            <h2 id="voice-modal-title">用声音，慢慢说。</h2>
+            <p>这个版本只演示语音对话的界面与状态，不会调用麦克风。</p>
+            <button class="voice-call-orb" id="voice-call-toggle" type="button" aria-pressed="false" aria-label="开始语音对话演示">
+              <svg class="mic-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3a3 3 0 0 0-3 3v6a3 3 0 0 0 6 0V6a3 3 0 0 0-3-3Z"></path><path d="M5.5 11.5a6.5 6.5 0 0 0 13 0M12 18v3M9 21h6"></path></svg>
+            </button>
+            <p class="voice-call-status" id="voice-call-status" role="status">准备好时，点一下开始</p>
           </section>
         </div>
 
@@ -586,16 +620,18 @@
       <aside class="prototype-notes" aria-label="原型说明">
         <p class="notes-kicker">PRODUCT PROTOTYPE · V0.4</p>
         <h2>从闪念开始，<br />沿同一条线索走到底。</h2>
-        <p>心潮把今日潮汐、便贴、Reigns 式选择、四股潮向、潮笺卡槽、情绪陪伴对话、微行动和未来回响串成一段连续体验。日报可解释、对话可退出，结尾不显示得分或长期标签。</p>
+        <p>心潮把今日潮汐、答案之书、图片便签、Reigns 式选择、四股潮向、文字与语音陪伴、未来回响和初印象放进同一个轻量空间。</p>
         <ol>
           <li><span>01</span>今日潮汐</li>
-          <li><span>02</span>闪念便贴</li>
-          <li><span>03</span>主题确认</li>
-          <li><span>04</span>情境选择</li>
-          <li><span>05</span>潮笺收集</li>
-          <li><span>06</span>情绪对话</li>
-          <li><span>07</span>微行动</li>
-          <li><span>08</span>未来回响</li>
+          <li><span>02</span>每日答案</li>
+          <li><span>03</span>图片闪念</li>
+          <li><span>04</span>主题确认</li>
+          <li><span>05</span>情境选择</li>
+          <li><span>06</span>潮笺收集</li>
+          <li><span>07</span>文字与语音对话</li>
+          <li><span>08</span>微行动</li>
+          <li><span>09</span>未来回响</li>
+          <li><span>10</span>初印象</li>
         </ol>
         <p class="desktop-tip">可用鼠标、触控或键盘完成整条主线</p>
       </aside>

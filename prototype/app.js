@@ -5,7 +5,25 @@ const CARD_STORAGE_KEY = "xinchao.tide-cards.v1"
 const QUICK_NOTE_STORAGE_KEY = "xinchao.quick-notes.v1"
 const QUICK_NOTE_MAX_LENGTH = 200
 const QUICK_NOTE_LIMIT = 50
+const ANSWER_BOOK_STORAGE_KEY = "xinchao.answer-book.v1"
+const ONBOARDING_STORAGE_KEY = "xinchao.onboarding.v1"
+const QUICK_NOTE_IMAGE_MAX_DATA_LENGTH = 650000
 const DAY_MS = 24 * 60 * 60 * 1000
+
+const answerBookCards = [
+  "先把最急的声音放低一点，再听真正重要的那一个。",
+  "答案不一定在更用力之后，也可能在停一下之后。",
+  "今天适合把问题缩小，而不是把自己逼大。",
+  "允许一件事暂时没有结论，它仍然可以向前。",
+  "你已经知道一部分答案，只是还需要一点安静。",
+  "先照顾能被照顾的那一小块，其他可以晚一点。",
+  "如果两条路都不确定，选择更能保留余力的那条。",
+  "不必证明感受合理，先承认它正在这里。",
+  "今天的转机，也许是一句更诚实的话。",
+  "把下一步变得足够小，小到此刻就能开始。",
+  "有些答案不是找到的，是在生活里慢慢长出来的。",
+  "先问自己想守住什么，再决定需要放下什么。"
+]
 
 const cards = [
   {
@@ -323,7 +341,8 @@ const bottomNav = byId("bottom-nav")
 const storyCard = byId("story-card")
 const leftPreview = byId("left-preview")
 const rightPreview = byId("right-preview")
-const safetyModal = byId("safety-modal")
+const onboardingModal = byId("onboarding-modal")
+const voiceModal = byId("voice-modal")
 const tideModal = byId("tide-modal")
 const cardDetailModal = byId("card-detail-modal")
 const topLevelScreens = new Set(["today-screen", "thoughts-screen", "chat-screen", "cards-screen", "echoes-screen", "settings-screen"])
@@ -347,7 +366,6 @@ function createFreshFlow() {
     chatMode: "standalone",
     chatMessages: [],
     chatBusy: false,
-    chatCrisis: false,
     chatSeed: "",
     selectedAction: "",
     selectedEcho: "",
@@ -364,8 +382,12 @@ let locked = false
 let dragging = false
 let dragStartX = 0
 let dragX = 0
-let modalReturnFocus = null
+let onboardingReturnFocus = null
+let voiceModalReturnFocus = null
 let cardDetailReturnFocus = null
+let pendingQuickNoteImage = ""
+let voiceInputActive = false
+let ephemeralAnswerRecord = null
 const runtimeTimers = new Set()
 
 function schedule(callback, delay) {
@@ -405,9 +427,9 @@ function showScreen(screenOrId, options = {}) {
   if (!target) return
   if (activeScreenId === "chat-screen" && target.id !== "chat-screen") {
     flow.chatBusy = false
+    setVoiceInputState(false, { transcribe: false })
     if (flow.chatMode === "standalone") {
       flow.chatMessages = []
-      flow.chatCrisis = false
       flow.chatSeed = ""
       byId("chat-input").value = ""
     }
@@ -423,6 +445,7 @@ function showScreen(screenOrId, options = {}) {
   if (target.id === "today-screen") {
     updateDueEchoCard()
     renderTodayReport()
+    renderAnswerBook()
   }
   if (target.id === "report-screen") renderDailyReport()
   if (target.id === "thoughts-screen") {
@@ -571,7 +594,6 @@ function resetDownstreamFlow() {
   flow.chatMode = "flow"
   flow.chatMessages = []
   flow.chatBusy = false
-  flow.chatCrisis = false
   flow.chatSeed = ""
   flow.selectedAction = ""
   flow.selectedEcho = ""
@@ -1058,24 +1080,17 @@ function renderChat() {
     log.append(typing)
   }
 
-  byId("chat-crisis-panel").hidden = !flow.chatCrisis
-  byId("chat-quick-prompts").hidden = flow.chatCrisis
   const input = byId("chat-input")
-  input.disabled = flow.chatCrisis
-  input.placeholder = flow.chatCrisis ? "普通陪聊已暂停" : "此刻最想说的是……"
-  byId("chat-form").classList.toggle("is-paused", flow.chatCrisis)
-  byId("send-chat").disabled = flow.chatCrisis || flow.chatBusy || input.value.trim().length === 0
-  byId("chat-status").textContent = flow.chatCrisis
-    ? "普通陪聊已暂停，请优先使用上方的即时支持路径"
-    : (flow.chatBusy ? "潮伴正在组织一句回应……" : "当前原型不上传或持久保存聊天内容")
+  input.placeholder = "此刻最想说的是……"
+  byId("send-chat").disabled = flow.chatBusy || input.value.trim().length === 0
+  byId("voice-input").disabled = flow.chatBusy
+  byId("chat-status").textContent = voiceInputActive
+    ? "语音输入演示中 · 再点一次结束并生成示例文字"
+    : (flow.chatBusy ? "潮伴正在组织一句回应……" : "文字与语音目前都是前端交互演示")
 
   window.requestAnimationFrame(() => {
     log.scrollTop = log.scrollHeight
   })
-}
-
-function containsCrisisLanguage(text) {
-  return /(不想活|不想再活|活不下去|活着没意思|想死|想去死|自杀|自殘|自残|轻生|輕生|结束生命|結束生命|结束这一切|傷害自己|伤害自己|傷害別人|伤害别人|杀了自己|殺了自己|杀人|殺人|马上去死|立即危险|立即危險)/.test(text)
 }
 
 function demoChatReply(text) {
@@ -1100,19 +1115,10 @@ function demoChatReply(text) {
 
 function sendChatMessage(rawText) {
   const text = rawText.trim()
-  if (!text || flow.chatBusy || flow.chatCrisis) return
+  if (!text || flow.chatBusy) return
+  setVoiceInputState(false, { transcribe: false })
   flow.chatMessages.push({ role: "user", text })
   byId("chat-input").value = ""
-
-  if (containsCrisisLanguage(text)) {
-    flow.chatCrisis = true
-    flow.chatMessages.push({
-      role: "bot",
-      text: "谢谢你告诉我。现在先不继续普通对话：请确认你是否处于立即危险，并尽快联系所在地紧急服务、危机支持资源，或一位能马上来到你身边的人。"
-    })
-    renderChat()
-    return
-  }
 
   flow.chatBusy = true
   renderChat()
@@ -1128,8 +1134,8 @@ function beginChat() {
   flow.chatMode = "flow"
   flow.chatMessages = []
   flow.chatBusy = false
-  flow.chatCrisis = false
   flow.chatSeed = ""
+  setVoiceInputState(false, { transcribe: false })
   showScreen("chat-screen")
 }
 
@@ -1139,10 +1145,32 @@ function openStandaloneChat(options = {}) {
   if (shouldReset) {
     flow.chatMessages = []
     flow.chatBusy = false
-    flow.chatCrisis = false
     flow.chatSeed = options.fromReport ? "report" : ""
   }
+  setVoiceInputState(false, { transcribe: false })
   showScreen("chat-screen")
+}
+
+function setVoiceInputState(active, options = {}) {
+  voiceInputActive = active
+  const button = byId("voice-input")
+  button.setAttribute("aria-pressed", String(active))
+  button.setAttribute("aria-label", active ? "结束语音输入演示" : "开始语音输入演示")
+  button.classList.toggle("is-listening", active)
+
+  if (!active && options.transcribe !== false) {
+    const input = byId("chat-input")
+    if (!input.value.trim()) input.value = "我现在有一点累，想慢慢说。"
+  }
+  const input = byId("chat-input")
+  byId("send-chat").disabled = flow.chatBusy || input.value.trim().length === 0
+  byId("chat-status").textContent = active
+    ? "语音输入演示中 · 再点一次结束并生成示例文字"
+    : (options.transcribe === false ? "文字与语音目前都是前端交互演示" : "已生成一段示例文字，你可以继续编辑")
+}
+
+function toggleVoiceInputDemo() {
+  setVoiceInputState(!voiceInputActive)
 }
 
 function endChat() {
@@ -1236,13 +1264,172 @@ function showEchoScreen() {
   updateEchoSelection()
 }
 
+function todayStorageKey(date = new Date()) {
+  const year = date.getFullYear()
+  const month = String(date.getMonth() + 1).padStart(2, "0")
+  const day = String(date.getDate()).padStart(2, "0")
+  return `${year}-${month}-${day}`
+}
+
+function readAnswerBookRecord() {
+  if (ephemeralAnswerRecord && ephemeralAnswerRecord.date === todayStorageKey()) {
+    return ephemeralAnswerRecord
+  }
+  try {
+    const parsed = JSON.parse(window.localStorage.getItem(ANSWER_BOOK_STORAGE_KEY) || "null")
+    if (
+      parsed &&
+      parsed.date === todayStorageKey() &&
+      Number.isInteger(parsed.index) &&
+      parsed.index >= 0 &&
+      parsed.index < answerBookCards.length
+    ) {
+      return parsed
+    }
+  } catch (_error) {
+    return null
+  }
+  return null
+}
+
+function renderAnswerBook() {
+  const record = readAnswerBookRecord()
+  const dateLabel = new Intl.DateTimeFormat("zh-CN", { month: "long", day: "numeric" }).format(new Date())
+  byId("answer-book-date").textContent = dateLabel
+  byId("answer-book-result").hidden = !record
+  byId("answer-book-result").textContent = record ? `“${answerBookCards[record.index]}”` : ""
+  byId("answer-book-prompt").hidden = Boolean(record)
+  byId("draw-answer").disabled = Boolean(record)
+  byId("draw-answer").querySelector("span").textContent = record ? "今天已经抽过" : "抽取今日答案"
+  byId("answer-book-status").textContent = record
+    ? "这张卡会留到今天结束，明天可以再抽一次"
+    : "每天一次，不记录你想的问题"
+}
+
+function drawAnswerBookCard() {
+  if (readAnswerBookRecord()) return
+  const record = {
+    date: todayStorageKey(),
+    index: Math.floor(Math.random() * answerBookCards.length)
+  }
+  ephemeralAnswerRecord = record
+  try {
+    window.localStorage.setItem(ANSWER_BOOK_STORAGE_KEY, JSON.stringify(record))
+  } catch (_error) {
+    // The answer still remains available for this page session.
+  }
+  renderAnswerBook()
+}
+
+function renderInitialImpression() {
+  const noteCount = readQuickNotes().length
+  const tideRecords = readTideCardRecords()
+  const echoCount = readEchoes().length
+  const tideCounts = tideRecords.reduce((counts, record) => {
+    const key = record.id.split("-")[0]
+    counts[key] = (counts[key] || 0) + 1
+    return counts
+  }, {})
+  const dominantTide = Object.entries(tideCounts).sort((a, b) => b[1] - a[1])[0]?.[0]
+  const chips = []
+
+  if (noteCount > 0) chips.push("会接住一闪而过的想法")
+  if (dominantTide && tideMeta[dominantTide]) chips.push(`最近更靠近「${tideMeta[dominantTide].label}」`)
+  if (echoCount > 0) chips.push("愿意和未来的自己对话")
+  if (readAnswerBookRecord()) chips.push("愿意给直觉一点空间")
+  if (chips.length === 0) chips.push("愿意慢慢认识自己", "不急着给出结论")
+
+  byId("impression-title").textContent = dominantTide && tideMeta[dominantTide]
+    ? `你的近期收藏里，「${tideMeta[dominantTide].label}」正在多一点。`
+    : (noteCount > 0 ? "你似乎愿意先把想法放下来，再慢慢看清。" : "第一次见面，先按你的节奏慢慢认识。")
+  byId("impression-summary").textContent = "只使用数量与主动收藏类型生成这段初印象，不读取便签正文，也不形成分数。"
+  const container = byId("impression-chips")
+  container.replaceChildren()
+  chips.slice(0, 3).forEach((copy) => {
+    const chip = document.createElement("span")
+    chip.textContent = copy
+    container.append(chip)
+  })
+}
+
+function updateQuickNoteSaveState() {
+  const hasText = byId("quick-note-input").value.trim().length > 0
+  byId("save-quick-note").disabled = !hasText && !pendingQuickNoteImage
+}
+
+function clearQuickNotePhoto() {
+  pendingQuickNoteImage = ""
+  byId("quick-note-photo-input").value = ""
+  byId("quick-note-photo-image").removeAttribute("src")
+  byId("quick-note-photo-preview").hidden = true
+  updateQuickNoteSaveState()
+}
+
+function loadImageElement(dataUrl) {
+  return new Promise((resolve, reject) => {
+    const image = new Image()
+    image.onload = () => resolve(image)
+    image.onerror = () => reject(new Error("无法读取图片"))
+    image.src = dataUrl
+  })
+}
+
+function readFileAsDataUrl(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader()
+    reader.onload = () => resolve(String(reader.result || ""))
+    reader.onerror = () => reject(new Error("无法读取图片"))
+    reader.readAsDataURL(file)
+  })
+}
+
+async function compressQuickNotePhoto(file) {
+  if (!file || !file.type.startsWith("image/")) throw new Error("请选择一张图片")
+  if (file.size > 12 * 1024 * 1024) throw new Error("图片太大，请选择 12MB 以内的图片")
+  const source = await readFileAsDataUrl(file)
+  const image = await loadImageElement(source)
+  const maxSide = 720
+  const scale = Math.min(1, maxSide / Math.max(image.naturalWidth, image.naturalHeight))
+  const canvas = document.createElement("canvas")
+  canvas.width = Math.max(1, Math.round(image.naturalWidth * scale))
+  canvas.height = Math.max(1, Math.round(image.naturalHeight * scale))
+  const context = canvas.getContext("2d")
+  if (!context) throw new Error("当前浏览器暂时无法处理图片")
+  context.fillStyle = "#fffaf0"
+  context.fillRect(0, 0, canvas.width, canvas.height)
+  context.drawImage(image, 0, 0, canvas.width, canvas.height)
+  let output = canvas.toDataURL("image/jpeg", 0.78)
+  if (output.length > QUICK_NOTE_IMAGE_MAX_DATA_LENGTH) output = canvas.toDataURL("image/jpeg", 0.56)
+  if (output.length > QUICK_NOTE_IMAGE_MAX_DATA_LENGTH) throw new Error("图片压缩后仍然太大，请换一张试试")
+  return output
+}
+
+async function handleQuickNotePhoto(file) {
+  byId("quick-note-status").textContent = "正在准备图片预览……"
+  try {
+    pendingQuickNoteImage = await compressQuickNotePhoto(file)
+    byId("quick-note-photo-image").src = pendingQuickNoteImage
+    byId("quick-note-photo-preview").hidden = false
+    byId("quick-note-status").textContent = "图片已经放进便签，点击保存后才会留在本机"
+  } catch (error) {
+    clearQuickNotePhoto()
+    byId("quick-note-status").textContent = error instanceof Error ? error.message : "暂时无法添加图片"
+  }
+  updateQuickNoteSaveState()
+}
+
 function isValidQuickNoteRecord(record) {
   return Boolean(
     record &&
     typeof record.id === "string" &&
     typeof record.text === "string" &&
-    record.text.trim().length > 0 &&
+    (record.text.trim().length > 0 || (typeof record.imageData === "string" && record.imageData.startsWith("data:image/"))) &&
     record.text.length <= QUICK_NOTE_MAX_LENGTH &&
+    (record.imageData === undefined || (
+      typeof record.imageData === "string" &&
+      record.imageData.length <= QUICK_NOTE_IMAGE_MAX_DATA_LENGTH &&
+      (record.imageData === "" || record.imageData.startsWith("data:image/"))
+    )) &&
     Number.isFinite(record.createdAt)
   )
 }
@@ -1285,14 +1472,15 @@ function formatQuickNoteDate(timestamp) {
   }).format(new Date(timestamp))
 }
 
-function saveQuickNote(text) {
+function saveQuickNote(text, imageData = "") {
   const normalized = text.trim()
-  if (!normalized) return false
+  if (!normalized && !imageData) return false
   const now = Date.now()
   const randomPart = Math.random().toString(36).slice(2, 9)
   const record = {
     id: `note-${now}-${randomPart}`,
     text: normalized.slice(0, QUICK_NOTE_MAX_LENGTH),
+    imageData,
     createdAt: now
   }
   return writeQuickNotes([record, ...readQuickNotes()])
@@ -1343,8 +1531,20 @@ function renderQuickNotes() {
     time.textContent = formatQuickNoteDate(record.createdAt)
     meta.append(label, time)
 
-    const content = document.createElement("blockquote")
-    content.textContent = record.text
+    const body = document.createElement("div")
+    body.className = "quick-note-card-body"
+    if (record.imageData) {
+      const image = document.createElement("img")
+      image.src = record.imageData
+      image.alt = "闪念随手拍"
+      image.loading = "lazy"
+      body.append(image)
+    }
+    if (record.text.trim()) {
+      const content = document.createElement("blockquote")
+      content.textContent = record.text
+      body.append(content)
+    }
 
     const actions = document.createElement("div")
     actions.className = "quick-note-card-actions"
@@ -1352,7 +1552,7 @@ function renderQuickNotes() {
     useButton.className = "quick-note-use"
     useButton.type = "button"
     useButton.textContent = "用它开始梳理"
-    useButton.addEventListener("click", () => startFlow(record.text))
+    useButton.addEventListener("click", () => startFlow(record.text || "我想从这张照片开始梳理"))
     const removeButton = document.createElement("button")
     removeButton.className = "quick-note-delete"
     removeButton.type = "button"
@@ -1361,7 +1561,7 @@ function renderQuickNotes() {
     removeButton.addEventListener("click", () => requestRemoveQuickNote(record.id, removeButton))
     actions.append(useButton, removeButton)
 
-    article.append(meta, content, actions)
+    article.append(meta, body, actions)
     list.append(article)
   })
 
@@ -1764,30 +1964,86 @@ function updateSettingsStorageState() {
   const cardCount = readTideCardRecords().length
   cardButton.disabled = cardCount === 0
   cardButton.textContent = cardCount === 0 ? "卡槽目前为空" : `清空潮笺卡槽（${cardCount}）`
+  byId("my-card-slot-count").textContent = cardCount === 0 ? "还没有收下潮笺" : `已经收下 ${cardCount} 张潮笺`
+  byId("my-echo-count").textContent = count === 0 ? "还没有留给未来的话" : `已经保存 ${count} 条回响`
+  renderInitialImpression()
 }
 
-function openSafety(event) {
-  modalReturnFocus = event && event.currentTarget instanceof HTMLElement
+function openOnboarding(event) {
+  onboardingReturnFocus = event && event.currentTarget instanceof HTMLElement
     ? event.currentTarget
     : document.activeElement
-  safetyModal.hidden = false
-  window.requestAnimationFrame(() => byId("close-safety").focus())
+  onboardingModal.hidden = false
+  window.requestAnimationFrame(() => byId("close-onboarding").focus())
 }
 
-function closeSafety() {
-  if (safetyModal.hidden) return
-  safetyModal.hidden = true
-  if (modalReturnFocus && typeof modalReturnFocus.focus === "function" && modalReturnFocus.isConnected) {
-    modalReturnFocus.focus({ preventScroll: true })
+function closeOnboarding(remember = true) {
+  if (onboardingModal.hidden) return
+  onboardingModal.hidden = true
+  if (remember) {
+    try {
+      window.localStorage.setItem(ONBOARDING_STORAGE_KEY, "seen")
+    } catch (_error) {
+      // The tutorial can still be dismissed for this page session.
+    }
   }
-  modalReturnFocus = null
+  if (
+    onboardingReturnFocus &&
+    typeof onboardingReturnFocus.focus === "function" &&
+    onboardingReturnFocus.isConnected
+  ) {
+    onboardingReturnFocus.focus({ preventScroll: true })
+  }
+  onboardingReturnFocus = null
+}
+
+function shouldAutoOpenOnboarding() {
+  try {
+    return window.localStorage.getItem(ONBOARDING_STORAGE_KEY) !== "seen"
+  } catch (_error) {
+    return true
+  }
+}
+
+function setVoiceCallState(active) {
+  const button = byId("voice-call-toggle")
+  button.setAttribute("aria-pressed", String(active))
+  button.setAttribute("aria-label", active ? "暂停语音对话演示" : "开始语音对话演示")
+  button.classList.toggle("is-active", active)
+  byId("voice-call-status").textContent = active ? "正在听你说……再点一下可以暂停" : "已暂停 · 当前只是界面演示"
+}
+
+function openVoiceMode(event) {
+  voiceModalReturnFocus = event && event.currentTarget instanceof HTMLElement
+    ? event.currentTarget
+    : document.activeElement
+  setVoiceCallState(false)
+  byId("voice-call-status").textContent = "准备好时，点一下开始"
+  voiceModal.hidden = false
+  window.requestAnimationFrame(() => byId("close-voice-mode").focus())
+}
+
+function closeVoiceMode() {
+  if (voiceModal.hidden) return
+  voiceModal.hidden = true
+  setVoiceCallState(false)
+  if (
+    voiceModalReturnFocus &&
+    typeof voiceModalReturnFocus.focus === "function" &&
+    voiceModalReturnFocus.isConnected
+  ) {
+    voiceModalReturnFocus.focus({ preventScroll: true })
+  }
+  voiceModalReturnFocus = null
 }
 
 function trapModalFocus(event) {
   if (event.key !== "Tab") return
-  const activeModal = !cardDetailModal.hidden
-    ? cardDetailModal
-    : (!tideModal.hidden ? tideModal : (!safetyModal.hidden ? safetyModal : null))
+  const activeModal = !voiceModal.hidden
+    ? voiceModal
+    : (!onboardingModal.hidden
+      ? onboardingModal
+      : (!cardDetailModal.hidden ? cardDetailModal : (!tideModal.hidden ? tideModal : null)))
   if (!activeModal) return
   const focusable = Array.from(activeModal.querySelectorAll("button:not([disabled])"))
   if (focusable.length === 0) return
@@ -1817,17 +2073,9 @@ document.querySelectorAll("[data-start-new]").forEach((button) => {
   button.addEventListener("click", startNewFlow)
 })
 
-document.querySelectorAll("[data-open-safety]").forEach((button) => {
-  button.addEventListener("click", openSafety)
-})
-
 byId("start-flow").addEventListener("click", startNewFlow)
 byId("restart-flow").addEventListener("click", startNewFlow)
-byId("open-quick-notes").addEventListener("click", () => {
-  showScreen("thoughts-screen")
-  window.requestAnimationFrame(() => byId("quick-note-input").focus({ preventScroll: true }))
-})
-byId("open-chat").addEventListener("click", () => openStandaloneChat({ reset: true }))
+byId("draw-answer").addEventListener("click", drawAnswerBookCard)
 byId("open-daily-report").addEventListener("click", () => showScreen("report-screen"))
 byId("report-back").addEventListener("click", () => showScreen("today-screen"))
 byId("report-start-chat").addEventListener("click", () => openStandaloneChat({ fromReport: true }))
@@ -1845,20 +2093,28 @@ document.querySelectorAll("[data-report-feedback]").forEach((button) => {
 byId("quick-note-input").addEventListener("input", (event) => {
   const length = event.currentTarget.value.length
   byId("quick-note-count").textContent = `${length} / ${QUICK_NOTE_MAX_LENGTH}`
-  byId("save-quick-note").disabled = event.currentTarget.value.trim().length === 0
+  updateQuickNoteSaveState()
   byId("quick-note-status").textContent = "不会自动进入日报、画像或聊天"
+})
+byId("quick-note-photo-input").addEventListener("change", (event) => {
+  const file = event.currentTarget.files && event.currentTarget.files[0]
+  if (file) handleQuickNotePhoto(file)
+})
+byId("remove-quick-note-photo").addEventListener("click", () => {
+  clearQuickNotePhoto()
+  byId("quick-note-status").textContent = "图片已移除；可以只保存文字，也可以重新选择"
 })
 byId("quick-note-form").addEventListener("submit", (event) => {
   event.preventDefault()
   const input = byId("quick-note-input")
-  if (!input.value.trim()) return
-  if (!saveQuickNote(input.value)) {
+  if (!input.value.trim() && !pendingQuickNoteImage) return
+  if (!saveQuickNote(input.value, pendingQuickNoteImage)) {
     byId("quick-note-status").textContent = "这台浏览器暂时无法保存，请检查本地存储权限"
     return
   }
   input.value = ""
+  clearQuickNotePhoto()
   byId("quick-note-count").textContent = `0 / ${QUICK_NOTE_MAX_LENGTH}`
-  byId("save-quick-note").disabled = true
   byId("quick-note-status").textContent = "已经收好；只有你主动选择时，它才会进入章节"
   renderQuickNotes()
   updateSettingsStorageState()
@@ -1986,27 +2242,16 @@ byId("chat-back").addEventListener("click", () => {
   }
 })
 byId("chat-input").addEventListener("input", (event) => {
-  byId("send-chat").disabled = flow.chatCrisis || flow.chatBusy || event.currentTarget.value.trim().length === 0
+  byId("send-chat").disabled = flow.chatBusy || event.currentTarget.value.trim().length === 0
 })
+byId("voice-input").addEventListener("click", toggleVoiceInputDemo)
+byId("open-voice-mode").addEventListener("click", openVoiceMode)
 byId("chat-form").addEventListener("submit", (event) => {
   event.preventDefault()
   sendChatMessage(byId("chat-input").value)
 })
 document.querySelectorAll("[data-chat-prompt]").forEach((button) => {
   button.addEventListener("click", () => sendChatMessage(button.dataset.chatPrompt))
-})
-byId("chat-crisis-help").addEventListener("click", () => {
-  cancelRuntimeTimers()
-  flow.chatBusy = false
-  flow.chatCrisis = true
-  if (!flow.chatMessages.some((message) => message.safety)) {
-    flow.chatMessages.push({
-      role: "bot",
-      safety: true,
-      text: "我们先把安全放在最前面。请联系所在地紧急服务、危机支持资源，或一位能马上来到你身边的人。"
-    })
-  }
-  renderChat()
 })
 byId("end-chat").addEventListener("click", endChat)
 
@@ -2071,12 +2316,36 @@ cardDetailModal.addEventListener("click", (event) => {
   if (event.target === cardDetailModal) closeCardDetail()
 })
 
-byId("close-safety").addEventListener("click", closeSafety)
-byId("acknowledge-safety").addEventListener("click", closeSafety)
-safetyModal.addEventListener("click", (event) => {
-  if (event.target === safetyModal) closeSafety()
+byId("open-onboarding").addEventListener("click", openOnboarding)
+byId("reopen-onboarding").addEventListener("click", openOnboarding)
+byId("open-tutorial-from-settings").addEventListener("click", openOnboarding)
+byId("close-onboarding").addEventListener("click", () => closeOnboarding(true))
+byId("finish-onboarding").addEventListener("click", () => {
+  closeOnboarding(true)
+  showScreen("today-screen")
+})
+onboardingModal.addEventListener("click", (event) => {
+  if (event.target === onboardingModal) closeOnboarding(true)
+})
+
+byId("close-voice-mode").addEventListener("click", closeVoiceMode)
+byId("voice-call-toggle").addEventListener("click", (event) => {
+  setVoiceCallState(event.currentTarget.getAttribute("aria-pressed") !== "true")
+})
+voiceModal.addEventListener("click", (event) => {
+  if (event.target === voiceModal) closeVoiceMode()
 })
 document.addEventListener("keydown", (event) => {
+  if (!voiceModal.hidden && event.key === "Escape") {
+    event.preventDefault()
+    closeVoiceMode()
+    return
+  }
+  if (!onboardingModal.hidden && event.key === "Escape") {
+    event.preventDefault()
+    closeOnboarding(true)
+    return
+  }
   if (!cardDetailModal.hidden && event.key === "Escape") {
     event.preventDefault()
     closeCardDetail()
@@ -2087,11 +2356,6 @@ document.addEventListener("keydown", (event) => {
     closeTideQuote(false)
     return
   }
-  if (!safetyModal.hidden && event.key === "Escape") {
-    event.preventDefault()
-    closeSafety()
-    return
-  }
   trapModalFocus(event)
 })
 
@@ -2099,3 +2363,4 @@ renderNotes()
 updateDueEchoCard()
 updateSettingsStorageState()
 showScreen(activeScreenId, { focus: false })
+if (shouldAutoOpenOnboarding()) window.requestAnimationFrame(() => openOnboarding())
