@@ -421,7 +421,12 @@ function focusScreenHeading(screen) {
 
 function updateBottomNavigation(screenId) {
   bottomNav.hidden = !topLevelScreens.has(screenId)
-  backgroundMusicToggle.hidden = !musicControlScreens.has(screenId)
+  const musicSlot = byId(screenId)?.querySelector("[data-music-slot]")
+  const showMusicControl = musicControlScreens.has(screenId) && musicSlot
+  if (showMusicControl && backgroundMusicToggle.parentElement !== musicSlot) {
+    musicSlot.prepend(backgroundMusicToggle)
+  }
+  backgroundMusicToggle.hidden = !showMusicControl
   bottomNav.querySelectorAll("[data-nav-target]").forEach((button) => {
     if (button.dataset.navTarget === screenId) {
       button.setAttribute("aria-current", "page")
@@ -454,13 +459,6 @@ async function toggleBackgroundMusic() {
     backgroundMusic.pause()
   }
   syncBackgroundMusicButton()
-}
-
-function forwardMusicControlWheel(event) {
-  const activeScreen = byId(activeScreenId)
-  if (!activeScreen || activeScreen.scrollHeight <= activeScreen.clientHeight) return
-  event.preventDefault()
-  activeScreen.scrollTop += event.deltaY
 }
 
 function showScreen(screenOrId, options = {}) {
@@ -2448,7 +2446,6 @@ byId("open-daily-report").addEventListener("click", () => showScreen("report-scr
 byId("report-back").addEventListener("click", () => showScreen("today-screen"))
 byId("report-start-chat").addEventListener("click", () => openStandaloneChat({ fromReport: true }))
 backgroundMusicToggle.addEventListener("click", toggleBackgroundMusic)
-backgroundMusicToggle.addEventListener("wheel", forwardMusicControlWheel, { passive: false })
 backgroundMusic.addEventListener("play", syncBackgroundMusicButton)
 backgroundMusic.addEventListener("pause", syncBackgroundMusicButton)
 backgroundMusic.addEventListener("error", () => {

@@ -91,10 +91,8 @@ h1[tabindex="-1"]:focus { outline: none; }
 }
 
 .ambient-music-toggle {
-  position: absolute;
-  top: 50px;
-  right: 68px;
-  z-index: 65;
+  position: static;
+  flex: 0 0 auto;
   display: flex;
   min-width: 77px;
   height: 36px;
@@ -158,6 +156,7 @@ h1[tabindex="-1"]:focus { outline: none; }
   justify-content: space-between;
   min-height: 38px;
 }
+.header-actions { display: flex; flex: 0 0 auto; gap: 8px; align-items: center; margin-left: auto; }
 
 .brand-mark {
   display: inline-flex;

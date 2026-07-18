@@ -15,10 +15,6 @@
         <audio id="background-music" loop preload="metadata">
           <source src="assets/sleepy-rain.mp3" type="audio/mpeg" />
         </audio>
-        <button class="ambient-music-toggle" id="background-music-toggle" type="button" aria-label="播放雨声背景音乐" aria-pressed="false">
-          <span class="ambient-music-bars" aria-hidden="true"><i></i><i></i><i></i><i></i></span>
-          <span class="ambient-music-copy"><strong>雨声</strong><small id="background-music-status">播放</small></span>
-        </button>
 
         <section class="screen today-screen" id="today-screen" aria-labelledby="today-title">
           <header class="app-header">
@@ -26,7 +22,13 @@
               <span aria-hidden="true">◐</span>
               <strong>心潮</strong>
             </a>
-            <button class="icon-button tutorial-trigger" id="open-onboarding" type="button" aria-label="查看新手说明">?</button>
+            <div class="header-actions" data-music-slot>
+              <button class="ambient-music-toggle" id="background-music-toggle" type="button" aria-label="播放雨声背景音乐" aria-pressed="false">
+                <span class="ambient-music-bars" aria-hidden="true"><i></i><i></i><i></i><i></i></span>
+                <span class="ambient-music-copy"><strong>雨声</strong><small id="background-music-status">播放</small></span>
+              </button>
+              <button class="icon-button tutorial-trigger" id="open-onboarding" type="button" aria-label="查看新手说明">?</button>
+            </div>
           </header>
 
           <div class="home-welcome">
@@ -421,7 +423,7 @@
         <section class="screen library-screen thoughts-screen" id="thoughts-screen" aria-labelledby="thoughts-title" hidden>
           <header class="app-header">
             <a class="brand-mark" href="#today" data-nav-target="today-screen" aria-label="返回今天"><span aria-hidden="true">◐</span><strong>心潮</strong></a>
-            <span class="header-spacer" aria-hidden="true"></span>
+            <div class="header-actions" data-music-slot></div>
           </header>
 
           <div class="screen-heading library-heading thoughts-heading">
@@ -497,7 +499,7 @@
         <section class="screen library-screen card-slot-screen" id="cards-screen" aria-labelledby="cards-title" hidden>
           <header class="app-header">
             <a class="brand-mark" href="#today" data-nav-target="today-screen" aria-label="返回今天"><span aria-hidden="true">◐</span><strong>心潮</strong></a>
-            <span class="header-spacer" aria-hidden="true"></span>
+            <div class="header-actions" data-music-slot></div>
           </header>
           <div class="screen-heading library-heading">
             <p class="eyebrow">MY TIDE CARDS</p>
@@ -522,7 +524,7 @@
         <section class="screen library-screen" id="echoes-screen" aria-labelledby="echoes-title" hidden>
           <header class="app-header">
             <a class="brand-mark" href="#today" data-nav-target="today-screen" aria-label="返回今天"><span aria-hidden="true">◐</span><strong>心潮</strong></a>
-            <span class="header-spacer" aria-hidden="true"></span>
+            <div class="header-actions" data-music-slot></div>
           </header>
           <div class="screen-heading library-heading">
             <p class="eyebrow">MY ECHOES</p>
@@ -542,7 +544,9 @@
         <section class="screen settings-screen" id="settings-screen" aria-labelledby="settings-title" hidden>
           <header class="app-header">
             <a class="brand-mark" href="#today" data-nav-target="today-screen" aria-label="返回今天"><span aria-hidden="true">◐</span><strong>心潮</strong></a>
-            <button class="icon-button tutorial-trigger" id="reopen-onboarding" type="button" aria-label="重新查看新手说明">?</button>
+            <div class="header-actions" data-music-slot>
+              <button class="icon-button tutorial-trigger" id="reopen-onboarding" type="button" aria-label="重新查看新手说明">?</button>
+            </div>
           </header>
           <div class="screen-heading library-heading">
             <p class="eyebrow">YOUR SPACE</p>
